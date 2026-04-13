@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────
+# create-project.sh
+# Usage : bash create-project.sh <NomDuProjet> [chemin/destination]
+# Exemple: bash create-project.sh MyApp /Users/Quentin.Waret/Desktop
+# ─────────────────────────────────────────────────────────────────
+set -e
+
+# ── Arguments ────────────────────────────────────────────────────
+PROJECT_NAME="${1:-}"
+DEST="${2:-$(pwd)}"
+
+if [[ -z "$PROJECT_NAME" ]]; then
+  echo "❌  Usage : bash create-project.sh <NomDuProjet> [destination]"
+  exit 1
+fi
+
+# npm interdit les majuscules → slug en lowercase pour create-next-app
+SLUG=$(echo "$PROJECT_NAME" | tr '[:upper:]' '-' | sed 's/^-*//' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')
+
+TARGET="$DEST/$PROJECT_NAME"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATES="$SCRIPT_DIR/templates"
+
+echo ""
+echo "🚀  Création du projet : $PROJECT_NAME"
+echo "📁  Destination        : $TARGET"
+echo ""
+
+# ── Vérifications ────────────────────────────────────────────────
+if [[ -d "$TARGET" ]]; then
+  echo "❌  Le dossier $TARGET existe déjà."
+  exit 1
+fi
+
+command -v node >/dev/null 2>&1 || { echo "❌  Node.js requis."; exit 1; }
+command -v npm  >/dev/null 2>&1 || { echo "❌  npm requis."; exit 1; }
+
+# ── 1. create-next-app ───────────────────────────────────────────
+echo "📦  [1/5] Initialisation Next.js…"
+cd "$DEST"
+npx create-next-app@latest "$SLUG" \
+  --typescript \
+  --tailwind \
+  --eslint \
+  --app \
+  --no-src-dir \
+  --import-alias "@/*" \
+  --yes
+
+# Renommage dossier slug → NomDuProjet
+if [[ "$SLUG" != "$PROJECT_NAME" ]]; then
+  mv "$DEST/$SLUG" "$TARGET"
+fi
+
+cd "$TARGET"
+
+# ── 2. Dépendances supplémentaires ───────────────────────────────
+echo ""
+echo "📦  [2/5] Installation de framer-motion…"
+npm install framer-motion
+
+# ── 3. shadcn/ui ─────────────────────────────────────────────────
+echo ""
+echo "🎨  [3/5] Initialisation shadcn/ui…"
+npx shadcn@latest init --yes --defaults
+
+# ── 4. Structure des dossiers ────────────────────────────────────
+echo ""
+echo "📁  [4/5] Création de la structure…"
+mkdir -p components/ui components/blocks components/modules components/pages
+mkdir -p public/fonts
+mkdir -p .cursor/rules
+
+# ── 5. Copie des rules + CLAUDE.md ───────────────────────────────
+echo ""
+echo "📋  [5/5] Copie des règles…"
+
+cp "$TEMPLATES/rules/"*.md .cursor/rules/
+
+cat > CLAUDE.md << 'CLAUDE'
+# Règles du projet
+
+Ce fichier est chargé automatiquement par Claude Code.
+
+---
+
+## Stack
+
+- **Framework** : Next.js App Router
+- **Language** : TypeScript 5 — typage strict, pas de `any`
+- **Style** : Tailwind v4
+- **Composants** : shadcn/ui (base non stylée, customisée)
+- **Animation** : Framer Motion
+- **Lint** : ESLint 9
+
+---
+
+## Structure des fichiers
+
+```
+app/                    → pages et layout Next.js
+app/globals.css         → tokens CSS + Tailwind
+
+components/
+├── ui/                 → atomes (composants de base indivisibles, jamais de logique métier)
+├── blocks/             → molécules (assemblages de composants ui, peut recevoir des données en props)
+├── modules/            → organismes (sections complètes, peut fetcher ses propres données)
+└── pages/              → templates (assemblages de modules)
+
+public/fonts/           → fonts en .woff2
+.cursor/rules/          → règles par rôle pour Cursor
+```
+
+---
+
+## Conventions de code
+
+- Props typées exhaustivement — interface dédiée par composant
+- JSDoc sur chaque prop
+- Exports : named ET default
+- Pas de `any`, pas de `// @ts-ignore`
+- Imports : React → libs externes → composants → types
+- Composants découpés si > 80 lignes
+- Fichiers et dossiers : PascalCase
+
+---
+
+## Tokens — règle absolue
+
+Les composants consomment uniquement :
+- `Theme-color` → couleurs et états
+- `Typographie` → styles de texte
+- `Effets` → ombres et blur
+
+Les `Fondations` ne sont **jamais** appelées directement dans les composants.
+**Aucune valeur hardcodée** — tout passe par les tokens.
+
+---
+
+## Animations
+
+- Framer Motion sur tous les éléments interactifs — jamais de CSS transition
+- Easing : `--fondations-motion-ease-*`
+- Durées : `--fondations-motion-duration-*`
+- Courbe signature : `cubic-bezier(0.76, 0, 0.24, 1)`
+- Durées entre 300ms et 600ms
+- `useReducedMotion` respecté sur chaque composant animé
+- Entrées lentes, sorties rapides
+- Pas de spring avec rebond
+
+---
+
+## Lecture Figma — MCP
+
+Lire UNIQUEMENT les collections de variables dans cet ordre :
+1. `Fondations`
+2. `Typographie`
+3. `Theme-color`
+4. `Effets`
+
+Ignorer : fills, styles locaux, couleurs directement appliquées sur les calques.
+
+---
+
+## Avant tout commit
+
+- `tsc --noEmit` passe sans erreur
+- `eslint .` passe sans erreur
+- Aucune valeur hardcodée introduite
+- Rapport de modifications généré
+
+---
+
+## Rôles disponibles (voir `.cursor/rules/`)
+
+| Fichier | Usage |
+|---|---|
+| `BASE.md` | Socle technique — toujours actif |
+| `ROLE-DEV.md` | Développement composants React/TS |
+| `ROLE-A11Y.md` | Audit et implémentation accessibilité |
+| `ROLE-AUDIT.md` | Audit code — génère un rapport avant toute modif |
+| `ROLE-MOTION.md` | Animations Framer Motion + performance |
+
+**Exemple d'appel :**
+```
+Applique ROLE-AUDIT.md et BASE.md. Audite le composant Header.tsx.
+```
+CLAUDE
+
+# ── Git commit ───────────────────────────────────────────────────
+git add -A
+git commit -m "init: Next.js + Tailwind v4 + shadcn/ui + Framer Motion + rules"
+
+# ── Fin ──────────────────────────────────────────────────────────
+echo ""
+echo "✅  Projet \"$PROJECT_NAME\" prêt dans : $TARGET"
+echo ""
+echo "   cd $TARGET"
+echo "   npm run dev"
+echo ""
