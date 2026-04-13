@@ -76,6 +76,11 @@ cp "$SCRIPT_DIR/convert-tokens.js" scripts/
 cp "$SCRIPT_DIR/tokens-to-css.js"  scripts/
 npm pkg set scripts.sync-tokens="node scripts/convert-tokens.js && node scripts/tokens-to-css.js" --silent
 
+# figma-design-tokens.json est privé et généré par plugin — ne pas versionner
+echo "" >> .gitignore
+echo "# figma" >> .gitignore
+echo "figma-design-tokens.json" >> .gitignore
+
 cp "$TEMPLATES/rules/"*.md .cursor/rules/
 
 cat > CLAUDE.md << 'CLAUDE'
