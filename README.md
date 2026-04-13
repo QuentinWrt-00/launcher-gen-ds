@@ -17,10 +17,10 @@ Lance un script pour créer un projet configuré (Next.js, Tailwind v4, Framer M
 
 ```bash
 # Cloner le repo une seule fois
-git clone https://github.com/QuentinWrt-00/launch-gen-ds.git ~/Desktop/launch-gen-ds
+git clone https://github.com/QuentinWrt-00/launcher-gen-ds.git ~/Desktop/launcher-gen-ds
 
 # Créer un nouveau projet
-bash ~/Desktop/launch-gen-ds/create-project.sh MonProjet ~/Desktop
+bash ~/Desktop/launcher-gen-ds/create-project.sh MonProjet ~/Desktop
 ```
 
 Le projet est prêt dans `~/Desktop/MonProjet`.
