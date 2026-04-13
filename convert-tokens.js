@@ -9,8 +9,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const INPUT  = process.argv[2] || path.join(__dirname, '../../figma-design-tokens.json');
-const OUTPUT = process.argv[3] || path.join(__dirname, '../../figma-design-tokens.w3c.json');
+const INPUT  = process.argv[2] || path.join(__dirname, '../figma-design-tokens.json');
+const OUTPUT = process.argv[3] || path.join(__dirname, '../figma-design-tokens.w3c.json');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

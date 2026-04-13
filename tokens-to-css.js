@@ -9,7 +9,7 @@
 const fs   = require('fs');
 const path = require('path');
 
-const INPUT      = process.argv[2] || path.join(__dirname, '../../figma-design-tokens.w3c.json');
+const INPUT      = process.argv[2] || path.join(__dirname, '../figma-design-tokens.w3c.json');
 const OUTPUT_CSS = process.argv[3] || path.join(__dirname, '../app/_tokens.css');
 const GLOBALS    = path.join(__dirname, '../app/globals.css');
 const IMPORT_LINE = '@import "./_tokens.css";';

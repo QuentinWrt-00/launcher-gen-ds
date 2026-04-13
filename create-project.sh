@@ -72,9 +72,14 @@ mkdir -p components/ui components/blocks components/modules components/pages
 mkdir -p public/fonts
 mkdir -p .cursor/rules
 
-# ── 5. Copie des rules + CLAUDE.md ───────────────────────────────
+# ── 5. Copie des scripts de sync + rules + CLAUDE.md ─────────────
 echo ""
-echo "📋  [5/5] Copie des règles…"
+echo "📋  [5/5] Copie des règles et scripts…"
+
+mkdir -p scripts
+cp "$SCRIPT_DIR/convert-tokens.js" scripts/
+cp "$SCRIPT_DIR/tokens-to-css.js"  scripts/
+npm pkg set scripts.sync-tokens="node scripts/convert-tokens.js && node scripts/tokens-to-css.js" --silent
 
 cp "$TEMPLATES/rules/"*.md .cursor/rules/
 
