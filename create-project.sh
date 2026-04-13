@@ -27,7 +27,7 @@ echo "🚀  Création du projet : $PROJECT_NAME"
 echo "📁  Destination        : $TARGET"
 echo ""
 
-# ── Vérifications ────────────────────────────────────────────────
+# ── Vérifications ─────────────────────────────────────────────────
 if [[ -d "$TARGET" ]]; then
   echo "❌  Le dossier $TARGET existe déjà."
   exit 1
@@ -57,24 +57,19 @@ cd "$TARGET"
 
 # ── 2. Dépendances supplémentaires ───────────────────────────────
 echo ""
-echo "📦  [2/5] Installation de framer-motion…"
+echo "📦  [2/4] Installation de framer-motion…"
 npm install framer-motion
 
-# ── 3. shadcn/ui ─────────────────────────────────────────────────
+# ── 3. Structure des dossiers ────────────────────────────────────
 echo ""
-echo "🎨  [3/5] Initialisation shadcn/ui…"
-npx shadcn@latest init --yes --defaults
-
-# ── 4. Structure des dossiers ────────────────────────────────────
-echo ""
-echo "📁  [4/5] Création de la structure…"
+echo "📁  [3/4] Création de la structure…"
 mkdir -p components/ui components/blocks components/modules components/pages
 mkdir -p public/fonts
 mkdir -p .cursor/rules
 
 # ── 5. Copie des scripts de sync + rules + CLAUDE.md ─────────────
 echo ""
-echo "📋  [5/5] Copie des règles et scripts…"
+echo "📋  [4/4] Copie des règles et scripts…"
 
 mkdir -p scripts
 cp "$SCRIPT_DIR/convert-tokens.js" scripts/
@@ -95,7 +90,6 @@ Ce fichier est chargé automatiquement par Claude Code.
 - **Framework** : Next.js App Router
 - **Language** : TypeScript 5 — typage strict, pas de `any`
 - **Style** : Tailwind v4
-- **Composants** : shadcn/ui (base non stylée, customisée)
 - **Animation** : Framer Motion
 - **Lint** : ESLint 9
 
@@ -195,7 +189,7 @@ CLAUDE
 
 # ── Git commit ───────────────────────────────────────────────────
 git add -A
-git commit -m "init: Next.js + Tailwind v4 + shadcn/ui + Framer Motion + rules"
+git commit -m "init: Next.js + Tailwind v4 + Framer Motion + rules"
 
 # ── Fin ──────────────────────────────────────────────────────────
 echo ""
