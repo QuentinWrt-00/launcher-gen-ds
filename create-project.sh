@@ -146,7 +146,6 @@ Les `Fondations` ne sont **jamais** appelées directement dans les composants.
 - Durées entre 300ms et 600ms
 - `useReducedMotion` respecté sur chaque composant animé
 - Entrées lentes, sorties rapides
-- Pas de spring avec rebond
 
 ---
 
@@ -186,6 +185,40 @@ Ignorer : fills, styles locaux, couleurs directement appliquées sur les calques
 Applique ROLE-AUDIT.md et BASE.md. Audite le composant Header.tsx.
 ```
 CLAUDE
+
+# ── 6. Nettoyage du boilerplate Next.js ──────────────────────────
+echo ""
+echo "🧹  [5/5] Nettoyage du boilerplate Next.js…"
+
+cat > app/layout.tsx << 'EOF'
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Design System",
+  description: "Design System",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="fr" className="h-full antialiased">
+      <body className="min-h-full flex flex-col">{children}</body>
+    </html>
+  );
+}
+EOF
+
+cat > app/page.tsx << 'EOF'
+import { redirect } from "next/navigation";
+
+export default function Home() {
+  redirect("/showcase");
+}
+EOF
 
 # ── Git commit ───────────────────────────────────────────────────
 git add -A

@@ -125,7 +125,7 @@ for (const [collection, data] of Object.entries(tokens)) {
     allLines.push('');
     allLines.push('  /* ─── Ombres (shorthand) ─── */');
     for (const size of ['sm', 'md', 'lg']) {
-      allLines.push(`  --shadow-${size}: var(--shadow-${size}-offsetX) var(--shadow-${size}-offsetY) var(--shadow-${size}-blur) var(--shadow-${size}-spread) var(--shadow-${size}-Color);`);
+      allLines.push(`  --shadow-${size}: var(--shadow-${size}-offsetX) var(--shadow-${size}-offsetY) var(--shadow-${size}-blur) var(--shadow-${size}-spread) var(--shadow-${size}-color);`);
     }
   }
 }
@@ -245,21 +245,26 @@ if (fs.existsSync(SHOWCASE_FILE) && compositeStyles.length > 0) {
   console.log(`✅  Safelist   : ${typoClasses.length} classes typo-* mises à jour dans DesignTokenShowcase.tsx`);
 }
 
-// ─── Injection de l'import dans globals.css si absent ────────────────────────
+// ─── Réécriture de globals.css (zéro hardcode, tokens uniquement) ────────────
 
 if (fs.existsSync(GLOBALS)) {
-  let globals = fs.readFileSync(GLOBALS, 'utf8');
-  if (!globals.includes(IMPORT_LINE)) {
-    // Insère après la première ligne @import existante
-    globals = globals.replace(
-      /(@import "[^"]+";)/,
-      `$1\n${IMPORT_LINE}`
-    );
-    fs.writeFileSync(GLOBALS, globals, 'utf8');
-    console.log(`🔗  Import ajouté dans globals.css`);
-  } else {
-    console.log(`🔗  Import déjà présent dans globals.css`);
-  }
+  const cleanGlobals = [
+    '@import "tailwindcss";',
+    '@import "./_tokens.css";',
+    '',
+    '@theme inline {',
+    '  --font-sans: var(--typographie-font-family-secondary);',
+    '  --font-serif: var(--typographie-font-family-primary);',
+    '}',
+    '',
+    'body {',
+    '  background: var(--colors-background-neutral);',
+    '  color: var(--colors-content-primary);',
+    '}',
+    '',
+  ].join('\n');
+  fs.writeFileSync(GLOBALS, cleanGlobals, 'utf8');
+  console.log(`✅  globals.css réécrit (zéro hardcode)`);
 }
 
 console.log(`\n🎉  Terminé — ${tokenCount} tokens CSS prêts.\n`);

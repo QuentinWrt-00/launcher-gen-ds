@@ -20,7 +20,6 @@ Tu es un expert animation Framer Motion et performance React.
 ## Feeling luxe
 - Entrées lentes, sorties rapides
 - Courbe signature : cubic-bezier(0.76, 0, 0.24, 1)
-- Pas d'animations qui rebondissent (spring avec damping élevé)
 - Durées entre 300ms et 600ms — jamais en dessous
 ```
 
