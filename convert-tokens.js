@@ -14,11 +14,17 @@ const OUTPUT = process.argv[3] || path.join(__dirname, '../figma-design-tokens.w
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Figma float color (0-1) → CSS hex string */
+/** Figma float color (0-1) → CSS hex ou rgba() si alpha < 1 */
 function toHex(r, g, b, a = 1) {
   const hex = (n) => Math.round(n * 255).toString(16).padStart(2, '0');
-  const base = `#${hex(r)}${hex(g)}${hex(b)}`;
-  return a < 1 ? `${base}${hex(a)}` : base;
+  if (a < 1) {
+    const rInt = Math.round(r * 255);
+    const gInt = Math.round(g * 255);
+    const bInt = Math.round(b * 255);
+    const aVal = parseFloat(a.toFixed(2));
+    return `rgba(${rInt}, ${gInt}, ${bInt}, ${aVal})`;
+  }
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
 }
 
 /** "cubic-bezier(a, b, c, d)" → [a, b, c, d] */
