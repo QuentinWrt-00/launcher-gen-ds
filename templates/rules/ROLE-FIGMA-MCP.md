@@ -54,17 +54,17 @@ Les assets téléchargés depuis `localhost:3845` (serveur MCP) sont des **artef
 
 ```tsx
 // ✅ Correct
-import DotIcon from "@/public/icons/dot.svg";
-<DotIcon aria-hidden className="shrink-0" style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }} />
+import IconName from "@/public/icons/<nom-semantique>.svg"; // ex: ArrowIcon, CloseIcon, ChevronIcon
+<IconName aria-hidden className="shrink-0" style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }} />
 
 // ❌ Interdit
-<img src="/icons/dot.svg" />
-const imgDot = "http://localhost:3845/assets/...";
+<img src="/icons/<nom-semantique>.svg" />
+const imgUrl = "http://localhost:3845/assets/...";
 ```
 
 **Règle pour les assets statiques** (illustrations, images raster) : `<img>` est autorisé. Déposer dans `public/` avec un chemin sémantique.
 
-**Un seul fichier par icône** — pas de variantes par état (`dot.svg` / `dot-disabled.svg`). La couleur change via `currentColor` qui hérite de la `color` CSS du parent.
+**Un seul fichier par icône** — pas de variantes par état (`<nom-semantique>.svg` / `<nom-semantique>-disabled.svg`). La couleur change via `currentColor` qui hérite de la `color` CSS du parent.
 
 ---
 
@@ -76,11 +76,11 @@ Le MCP Figma enveloppe souvent les icônes dans un container (ex: `size-[16px]`)
 
 ```tsx
 // ✅ Correct — token appliqué directement sur le composant SVG
-<DotIcon aria-hidden className="shrink-0" style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }} />
+<IconName aria-hidden className="shrink-0" style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }} />
 
 // ❌ Interdit
-<DotIcon width={16} height={16} />
-<span className="size-[16px]"><DotIcon /></span>
+<IconName width={16} height={16} />
+<span className="size-[16px]"><IconName /></span>
 ```
 
 Tokens disponibles : `--icon-size-xs` (12px), `--icon-size-sm` (16px), `--icon-size-md` (20px), `--icon-size-lg` (24px), `--icon-size-xl` (32px).
