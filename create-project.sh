@@ -260,6 +260,24 @@ export default function Home() {
 }
 EOF
 
+cat > app/globals.css << 'EOF'
+@import "tailwindcss";
+@import "./_tokens.css";
+
+@theme inline {
+  --font-sans:  var(--typography-font-family-secondary);
+  --font-serif: var(--typography-font-family-primary);
+  --breakpoint-tablet:  1024px;
+  --breakpoint-desktop: 1280px;
+}
+
+body {
+  background: var(--theme-color-background-default);
+  color: var(--theme-color-content-default);
+  font-family: var(--typography-font-family-secondary);
+}
+EOF
+
 # ── Git commit ───────────────────────────────────────────────────
 git add -A
 git commit -m "init: Next.js + Tailwind v4 + Framer Motion + rules"
