@@ -50,6 +50,15 @@ function formatCssValue(value, type) {
     return resolveAlias(value);
   }
   switch (type) {
+    case 'gradient': {
+      if (value && value.type === 'linear') {
+        const stops = value.stops
+          .map(s => `${s.color} ${Math.round(s.position * 100)}%`)
+          .join(', ');
+        return `linear-gradient(${value.angle}deg, ${stops})`;
+      }
+      return String(value);
+    }
     case 'cubicBezier':
       if (Array.isArray(value)) return `cubic-bezier(${value.join(', ')})`;
       return String(value).trim();
@@ -115,6 +124,7 @@ const SECTION_LABELS = {
   motion:          'Motion (duration + easing)',
   blur:            'Blur (layer / backdrop)',
   breakpoints:     'Breakpoints',
+  gradient:        'Gradients',
 };
 
 const allLines = [

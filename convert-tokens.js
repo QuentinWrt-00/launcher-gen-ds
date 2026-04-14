@@ -101,6 +101,49 @@ function formatValue(type, rawValue, collectionName) {
   return rawValue;
 }
 
+// ─── Gradient helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Matrice affine Figma 2×3 → angle CSS en degrés.
+ * En espace gradient Figma, le vecteur va de (0, 0.5) → (1, 0.5).
+ * Après transform : dx = a, dy = c (composantes du vecteur direction).
+ * Convention CSS : 0° = to top, 90° = to right, sens horaire.
+ */
+function gradientTransformToAngle(gradientTransform) {
+  const [[a], [c]] = gradientTransform;
+  const angleDeg = Math.atan2(a, -c) * (180 / Math.PI);
+  return Math.round(((angleDeg % 360) + 360) % 360);
+}
+
+/**
+ * Convertit colorStyles → tokens W3C de type "gradient".
+ * Gère GRADIENT_LINEAR. Les autres types sont ignorés (pas de spec W3C).
+ */
+function convertColorStyles(colorStyles) {
+  const result = {};
+  for (const [groupName, items] of Object.entries(colorStyles)) {
+    const group = {};
+    for (const [tokenName, style] of Object.entries(items)) {
+      const paint = style.paints?.[0];
+      if (!paint) continue;
+
+      if (paint.type === 'GRADIENT_LINEAR') {
+        const angle = gradientTransformToAngle(paint.gradientTransform);
+        const stops = paint.gradientStops.map(stop => ({
+          color: toHex(stop.color.r, stop.color.g, stop.color.b, stop.color.a),
+          position: stop.position,
+        }));
+        group[tokenName] = {
+          $type: 'gradient',
+          $value: { type: 'linear', angle, stops },
+        };
+      }
+    }
+    if (Object.keys(group).length > 0) result[groupName] = group;
+  }
+  return result;
+}
+
 // ─── Build ID → path map ──────────────────────────────────────────────────────
 
 function buildIdMap(data) {
@@ -220,7 +263,16 @@ for (const [colId, tokens] of Object.entries(variablesByCollection)) {
   tokenCount += count(output[colName]);
 }
 
-// Étape 3 : écriture
+// Étape 3 : colorStyles → gradients
+if (data.colorStyles) {
+  const gradients = convertColorStyles(data.colorStyles);
+  for (const [groupName, tokens] of Object.entries(gradients)) {
+    output[groupName] = tokens;
+    tokenCount += Object.keys(tokens).length;
+  }
+}
+
+// Étape 4 : écriture
 fs.writeFileSync(OUTPUT, JSON.stringify(output, null, 2), 'utf8');
 
 console.log(`✅  Conversion terminée`);
