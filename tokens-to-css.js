@@ -180,7 +180,7 @@ allLines.push('}', '');
 // ─── Utilitaires Tailwind @utility ────────────────────────────────────────────
 
 const CAPS_IDS = new Set(['label-lg-caps', 'label-md-caps', 'label-sm-caps']);
-const typoData = tokens['typographie'] || {};
+const typoData = tokens['typographie'] || tokens['typography'] || {};
 
 // Styles composites = nœuds directs de `typographie` qui ont font-size.$value
 const compositeStyles = Object.entries(typoData).filter(
