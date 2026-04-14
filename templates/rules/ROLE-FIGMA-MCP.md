@@ -13,8 +13,8 @@ Le MCP Figma conserve le `/` des groupes Figma dans les noms de variables CSS.
 Notre `_tokens.css` utilise des `-`. Il faut toujours convertir.
 
 ```
-MCP génère   →  var(--colors-container\/primary)
-À écrire     →  var(--colors-container-primary)
+MCP génère   →  var(--color-container\/primary)
+À écrire     →  var(--color-container-primary)
 ```
 
 **Règle :** remplacer `\/` par `-` dans tous les `var(--...)` du code MCP.
@@ -41,25 +41,61 @@ Classes disponibles dans `_tokens.css` : `typo-headline-md`, `typo-headline-sm`,
 
 ---
 
-## 3. Assets — jamais de localhost
+## 3. Assets SVG — export manuel, pas les URLs MCP
 
-Le MCP sert les assets depuis un serveur local temporaire (`http://localhost:3845/assets/...`).
-Ces URLs ne fonctionnent que quand Figma Desktop est ouvert.
+Les assets téléchargés depuis `localhost:3845` (serveur MCP) sont des **artefacts internes Figma** : dimensions non standard (`viewBox="0 0 2 2"`), variables CSS Figma internes (`fill="var(--fill-0, white)"`). Ils ne correspondent pas aux exports Figma réels et ne doivent pas être utilisés tels quels.
 
-**Règle :** pour chaque asset `localhost:3845` dans le code MCP :
-1. Télécharger le fichier : `curl -s "<url>" -o public/icons/<nom-semantique>.<ext>`
-2. Vérifier que le fichier est valide (pas une page d'erreur HTML)
-3. Remplacer la constante dans le composant : `"/icons/<nom-semantique>.<ext>"`
+**Règle pour les icônes monochromes :**
+1. Exporter l'icône manuellement depuis Figma (format SVG, taille 24×24)
+2. Remplacer `fill="black"` (ou toute couleur hardcodée) par `fill="currentColor"`
+3. Déposer dans `public/icons/<nom-semantique>.svg`
+4. Importer via SVGR — jamais via `<img>`
 
-Nommage : kebab-case sémantique. Si plusieurs états : `<nom>-<etat>.svg` (ex: `dot.svg`, `dot-disabled.svg`).
+```tsx
+// ✅ Correct
+import DotIcon from "@/public/icons/dot.svg";
+<DotIcon aria-hidden className="shrink-0" style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }} />
+
+// ❌ Interdit
+<img src="/icons/dot.svg" />
+const imgDot = "http://localhost:3845/assets/...";
+```
+
+**Règle pour les assets statiques** (illustrations, images raster) : `<img>` est autorisé. Déposer dans `public/` avec un chemin sémantique.
+
+**Un seul fichier par icône** — pas de variantes par état (`dot.svg` / `dot-disabled.svg`). La couleur change via `currentColor` qui hérite de la `color` CSS du parent.
 
 ---
 
-## 4. Tokens — aucune valeur hardcodée
+## 4. Icônes — container et dimensionnement via tokens
+
+Le MCP Figma enveloppe souvent les icônes dans un container (ex: `size-[16px]`). Ce container sert à la mise en page et au centrage — il doit être préservé avec les tokens de taille.
+
+**Règle :** ne jamais utiliser de valeur numérique directe pour dimensionner une icône ou son container.
+
+```tsx
+// ✅ Correct — token via style prop sur le container
+<span
+  className="relative flex shrink-0 items-center justify-center"
+  style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }}
+>
+  <DotIcon aria-hidden />
+</span>
+
+// ❌ Interdit
+<DotIcon width={16} height={16} />
+<span className="size-[16px]">...</span>
+```
+
+Tokens disponibles : `--icon-size-xs` (12px), `--icon-size-sm` (16px), `--icon-size-md` (20px), `--icon-size-lg` (24px), `--icon-size-xl` (32px).
+
+---
+
+## 5. Tokens — aucune valeur hardcodée
 
 Le MCP génère des fallbacks CSS dans les `var()` :
 ```
-var(--colors-container\/primary, black)   ← "black" est un fallback hardcodé
+var(--color-container\/primary, black)   ← "black" est un fallback hardcodé
 ```
 
 **Règle :** supprimer tous les fallbacks. Écrire uniquement `var(--token-name)`.
@@ -67,7 +103,7 @@ Si un token semble manquant, vérifier dans `app/_tokens.css` avant d'ajouter qu
 
 ---
 
-## 5. Animations — Framer Motion obligatoire
+## 6. Animations — Framer Motion obligatoire
 
 Le MCP génère des états statiques (default, hover, pressed, disabled).
 Ces états ne doivent **jamais** être implémentés via CSS `transition`.
@@ -81,7 +117,7 @@ Ces états ne doivent **jamais** être implémentés via CSS `transition`.
 
 ---
 
-## 6. Attributs de debug MCP à supprimer
+## 7. Attributs de debug MCP à supprimer
 
 Le MCP ajoute des attributs `data-node-id`, `id="node-*"` pour le debug Figma.
 Ces attributs ne doivent **pas** apparaître dans le code final.
