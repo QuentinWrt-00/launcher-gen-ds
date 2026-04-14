@@ -57,8 +57,9 @@ cd "$TARGET"
 
 # ── 2. Dépendances supplémentaires ───────────────────────────────
 echo ""
-echo "📦  [2/4] Installation de framer-motion…"
+echo "📦  [2/4] Installation des dépendances…"
 npm install framer-motion
+npm install --save-dev @svgr/webpack
 
 # ── 3. Structure des dossiers ────────────────────────────────────
 echo ""
@@ -190,6 +191,32 @@ Ignorer : fills, styles locaux, couleurs directement appliquées sur les calques
 Applique ROLE-AUDIT.md et BASE.md. Audite le composant Header.tsx.
 ```
 CLAUDE
+
+# ── 5b. next.config.ts + types SVG ──────────────────────────────
+cat > next.config.ts << 'EOF'
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: [{ loader: "@svgr/webpack", options: { svgo: false } }],
+    });
+    return config;
+  },
+};
+
+export default nextConfig;
+EOF
+
+mkdir -p types
+cat > types/svg.d.ts << 'EOF'
+declare module "*.svg" {
+  import type { FC, SVGProps } from "react";
+  const SVG: FC<SVGProps<SVGSVGElement>>;
+  export default SVG;
+}
+EOF
 
 # ── 6. Nettoyage du boilerplate Next.js ──────────────────────────
 echo ""
