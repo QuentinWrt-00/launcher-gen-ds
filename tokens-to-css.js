@@ -51,11 +51,22 @@ function formatCssValue(value, type) {
   }
   switch (type) {
     case 'gradient': {
-      if (value && value.type === 'linear') {
-        const stops = value.stops
-          .map(s => `${s.color} ${Math.round(s.position * 100)}%`)
-          .join(', ');
+      if (!value || !value.stops) return String(value);
+      const stops = value.stops
+        .map(s => `${s.color} ${Math.round(s.position * 100)}%`)
+        .join(', ');
+      if (value.type === 'linear') {
         return `linear-gradient(${value.angle}deg, ${stops})`;
+      }
+      if (value.type === 'radial') {
+        return `radial-gradient(circle at ${value.cx}% ${value.cy}%, ${stops})`;
+      }
+      if (value.type === 'angular') {
+        return `conic-gradient(from ${value.angle}deg at ${value.cx}% ${value.cy}%, ${stops})`;
+      }
+      if (value.type === 'diamond') {
+        // Pas d'équivalent CSS natif — rendu en radial
+        return `radial-gradient(circle at ${value.cx}% ${value.cy}%, ${stops})`;
       }
       return String(value);
     }

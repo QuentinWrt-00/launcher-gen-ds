@@ -105,8 +105,7 @@ function formatValue(type, rawValue, collectionName) {
 
 /**
  * Matrice affine Figma 2×3 → angle CSS en degrés.
- * En espace gradient Figma, le vecteur va de (0, 0.5) → (1, 0.5).
- * Après transform : dx = a, dy = c (composantes du vecteur direction).
+ * Vecteur direction en espace objet : dx = a, dy = c.
  * Convention CSS : 0° = to top, 90° = to right, sens horaire.
  */
 function gradientTransformToAngle(gradientTransform) {
@@ -116,8 +115,30 @@ function gradientTransformToAngle(gradientTransform) {
 }
 
 /**
+ * Matrice affine Figma 2×3 → centre en % pour radial / angular / diamond.
+ * Le centre est le point (0.5, 0.5) de l'espace gradient projeté en espace objet.
+ */
+function gradientCenter(gradientTransform) {
+  const [[a, b, tx], [c, d, ty]] = gradientTransform;
+  const cx = Math.round((a * 0.5 + b * 0.5 + tx) * 100);
+  const cy = Math.round((c * 0.5 + d * 0.5 + ty) * 100);
+  return { cx, cy };
+}
+
+/** Convertit les gradientStops Figma (floats 0-1) en tableau stops W3C */
+function buildStops(gradientStops) {
+  return gradientStops.map(stop => ({
+    color: toHex(stop.color.r, stop.color.g, stop.color.b, stop.color.a),
+    position: stop.position,
+  }));
+}
+
+/**
  * Convertit colorStyles → tokens W3C de type "gradient".
- * Gère GRADIENT_LINEAR. Les autres types sont ignorés (pas de spec W3C).
+ * LINEAR  → linear-gradient
+ * RADIAL  → radial-gradient (circle, centre calculé)
+ * ANGULAR → conic-gradient  (angle de départ + centre)
+ * DIAMOND → radial-gradient (fallback CSS — pas d'équivalent natif)
  */
 function convertColorStyles(colorStyles) {
   const result = {};
@@ -127,15 +148,33 @@ function convertColorStyles(colorStyles) {
       const paint = style.paints?.[0];
       if (!paint) continue;
 
+      const stops = buildStops(paint.gradientStops);
+
       if (paint.type === 'GRADIENT_LINEAR') {
         const angle = gradientTransformToAngle(paint.gradientTransform);
-        const stops = paint.gradientStops.map(stop => ({
-          color: toHex(stop.color.r, stop.color.g, stop.color.b, stop.color.a),
-          position: stop.position,
-        }));
         group[tokenName] = {
           $type: 'gradient',
           $value: { type: 'linear', angle, stops },
+        };
+      } else if (paint.type === 'GRADIENT_RADIAL') {
+        const { cx, cy } = gradientCenter(paint.gradientTransform);
+        group[tokenName] = {
+          $type: 'gradient',
+          $value: { type: 'radial', cx, cy, stops },
+        };
+      } else if (paint.type === 'GRADIENT_ANGULAR') {
+        const { cx, cy } = gradientCenter(paint.gradientTransform);
+        const angle = gradientTransformToAngle(paint.gradientTransform);
+        group[tokenName] = {
+          $type: 'gradient',
+          $value: { type: 'angular', angle, cx, cy, stops },
+        };
+      } else if (paint.type === 'GRADIENT_DIAMOND') {
+        const { cx, cy } = gradientCenter(paint.gradientTransform);
+        group[tokenName] = {
+          $type: 'gradient',
+          $value: { type: 'diamond', cx, cy, stops },
+          $extensions: { 'com.figma': { note: 'Diamond gradient — rendu en radial, pas d\'équivalent CSS natif' } },
         };
       }
     }
