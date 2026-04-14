@@ -7,6 +7,19 @@ Le code MCP est une **base de travail**, pas un résultat final. Applique chaque
 
 ---
 
+## Protocole de lecture Figma (Workflow obligatoire)
+
+Avant d'écrire la moindre ligne de code pour un composant, tu dois suivre scrupuleusement ces étapes :
+
+1. **Analyser le noeud Figma** : Utiliser `get_design_context` sur l'URL fournie pour récupérer la structure du composant et les noms des variables Figma appliquées.
+2. **Résoudre via le Code (Source de vérité)** : Lire `app/_tokens.css`. Faire le mapping entre les variables Figma et les variables CSS du projet (appliquer la règle de conversion slash `/` → tiret `-`).
+   - 🚨 *Si une variable Figma n'existe pas dans `_tokens.css`, tu ne dois pas inventer de valeur ni hardcoder de Hex/RGB. Tu dois le signaler dans ton rapport.*
+   - 🚨 *Si tu détectes un groupe de variables typographiques, cherche la classe utilitaire `@utility typo-*` correspondante dans `_tokens.css`.*
+3. **Vérifier les Assets** : Explorer le dossier `public/icons/` pour vérifier si les SVG nécessaires existent déjà avant de proposer un export.
+4. **Appliquer les règles de nettoyage** : Supprimer les attributs de debug MCP, les fallbacks CSS, et appliquer les règles d'animation (Framer Motion / CSS) définies ci-dessous.
+
+---
+
 ## 1. Noms de variables CSS — slash → tiret
 
 Le MCP Figma conserve le `/` des groupes Figma dans les noms de variables CSS.
