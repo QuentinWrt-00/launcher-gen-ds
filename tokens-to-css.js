@@ -16,15 +16,18 @@ const IMPORT_LINE = '@import "./_tokens.css";';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** "collection.path.key" → "--collection-path-key"
+/** "path.key" → "--path-key"
+ *  Le préfixe de collection n'est PAS inclus dans le path (strippé en amont).
+ *  Les variables Figma portent elles-mêmes leur préfixe dans leur nom de groupe.
  *  Normalizations applied:
- *  - Removes "primitive" / "semantic" / "sementic" (Figma artefacts, redundant in CSS)
+ *  - Removes "primitive" / "semantic" / "sementic" (Figma artefacts, backward compat)
  *  - "typographie" → "typography"  (frenglish fix)
  *  - "tablette"    → "tablet"      (French → English)
  */
 function toVar(tokenPath) {
   return '--' + tokenPath
     .replace(/\./g, '-')
+    .replace(/^semantic-|^sementic-|^primitive-/g, '')
     .replace(/-sementic-|-semantic-/g, '-')
     .replace(/-primitive-/g, '-')
     .replace(/^typographie(-|$)/, 'typography$1')
@@ -39,9 +42,14 @@ function pxToRem(value) {
   return `${parseFloat((num / 16).toFixed(4))}rem`;
 }
 
-/** Alias W3C {a.b.c} → var(--a-b-c) */
+/** Alias W3C {collection.path.key} → var(--path-key)
+ *  Strips le premier segment (nom de collection) avant de résoudre.
+ */
 function resolveAlias(value) {
-  return value.replace(/\{([^}]+)\}/g, (_, p) => `var(${toVar(p)})`);
+  return value.replace(/\{([^}]+)\}/g, (_, p) => {
+    const withoutCollection = p.includes('.') ? p.slice(p.indexOf('.') + 1) : p;
+    return `var(${toVar(withoutCollection)})`;
+  });
 }
 
 /** Formate une valeur selon le $type W3C */
@@ -153,7 +161,7 @@ for (const [collection, data] of Object.entries(tokens)) {
   allLines.push(`\n  /* ─── ${label} ─── */`);
 
   const lines = [];
-  walkTokens(data, [collection], lines);
+  walkTokens(data, [], lines); // collection prefix strippé — porté par le nom de variable Figma
   allLines.push(...lines);
   tokenCount += lines.length;
 
@@ -189,15 +197,17 @@ if (compositeStyles.length > 0) {
   allLines.push('/* ⚠️  NE PAS MODIFIER MANUELLEMENT — relancer `npm run sync-tokens` */');
 
   for (const [id] of compositeStyles) {
-    const p = `--typography-${id}`;
+    // Si le nom de groupe Figma inclut déjà "typography-", on le strip pour éviter le doublon
+    const utilId = id.replace(/^typography-/, '');
+    const p = `--typography-${utilId}`;
     allLines.push('');
-    allLines.push(`@utility typo-${id} {`);
+    allLines.push(`@utility typo-${utilId} {`);
     allLines.push(`  font-family: var(${p}-font-family);`);
     allLines.push(`  font-weight: var(${p}-font-weight);`);
     allLines.push(`  font-size: var(${p}-font-size);`);
     allLines.push(`  line-height: var(${p}-line-height);`);
     allLines.push(`  letter-spacing: var(${p}-letter-spacing);`);
-    if (CAPS_IDS.has(id)) {
+    if (CAPS_IDS.has(utilId)) {
       allLines.push('  text-transform: uppercase;');
     }
     allLines.push('}');
@@ -226,7 +236,9 @@ function collectMobileOverrides(obj, pathParts) {
   }
 }
 
-collectMobileOverrides(tokens, []);
+for (const [, collectionData] of Object.entries(tokens)) {
+  collectMobileOverrides(collectionData, []);
+}
 
 if (mobileOverrides.length > 0) {
   allLines.push('');
@@ -251,7 +263,7 @@ console.log(`✅  CSS généré : ${OUTPUT_CSS}  (${tokenCount} variables CSS da
 const SHOWCASE_FILE = path.join(__dirname, '../components/modules/DesignTokenShowcase.tsx');
 
 if (fs.existsSync(SHOWCASE_FILE) && compositeStyles.length > 0) {
-  const typoClasses = compositeStyles.map(([id]) => `typo-${id}`);
+  const typoClasses = compositeStyles.map(([id]) => `typo-${id.replace(/^typography-/, '')}`);
 
   // Regroupe par préfixe (typo-headline-*, typo-body-*, typo-label-*) pour la lisibilité
   const groups = {};
