@@ -67,24 +67,19 @@ const imgDot = "http://localhost:3845/assets/...";
 
 ---
 
-## 4. Icônes — container et dimensionnement via tokens
+## 4. Icônes — dimensionnement via tokens directement sur le composant SVG
 
-Le MCP Figma enveloppe souvent les icônes dans un container (ex: `size-[16px]`). Ce container sert à la mise en page et au centrage — il doit être préservé avec les tokens de taille.
+Le MCP Figma enveloppe souvent les icônes dans un container (ex: `size-[16px]`). Ce container est un artifice de composition interne Figma — ne pas le répliquer. Avec SVGR, le composant SVG est un `FC<SVGProps<SVGSVGElement>>` qui accepte `style` et `className` directement.
 
-**Règle :** ne jamais utiliser de valeur numérique directe pour dimensionner une icône ou son container.
+**Règle :** appliquer le token `--icon-size-*` directement sur le composant SVGR. Jamais de valeur numérique directe, jamais de wrapper dédié à la taille.
 
 ```tsx
-// ✅ Correct — token via style prop sur le container
-<span
-  className="relative flex shrink-0 items-center justify-center"
-  style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }}
->
-  <DotIcon aria-hidden />
-</span>
+// ✅ Correct — token appliqué directement sur le composant SVG
+<DotIcon aria-hidden className="shrink-0" style={{ width: 'var(--icon-size-sm)', height: 'var(--icon-size-sm)' }} />
 
 // ❌ Interdit
 <DotIcon width={16} height={16} />
-<span className="size-[16px]">...</span>
+<span className="size-[16px]"><DotIcon /></span>
 ```
 
 Tokens disponibles : `--icon-size-xs` (12px), `--icon-size-sm` (16px), `--icon-size-md` (20px), `--icon-size-lg` (24px), `--icon-size-xl` (32px).
