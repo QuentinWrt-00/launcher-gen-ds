@@ -16,7 +16,8 @@ Avant d'écrire la moindre ligne de code pour un composant, tu dois suivre scrup
    - 🚨 *Si une variable Figma n'existe pas dans `_tokens.css`, tu ne dois pas inventer de valeur ni hardcoder de Hex/RGB. Tu dois le signaler dans ton rapport.*
    - 🚨 *Si tu détectes un groupe de variables typographiques, cherche la classe utilitaire `@utility typo-*` correspondante dans `_tokens.css`.*
 3. **Vérifier les Assets** : Explorer le dossier `public/icons/` pour vérifier si les SVG nécessaires existent déjà avant de proposer un export.
-4. **Appliquer les règles de nettoyage** : Supprimer les attributs de debug MCP, les fallbacks CSS, et appliquer les règles d'animation (Framer Motion / CSS) définies ci-dessous.
+4. **Vérifier les fonts** : Vérifier que `app/fonts.css` existe et est importé dans `globals.css`. Si absent, créer le fichier avec les `@font-face` des polices du projet (voir `ROLE-FONTS.md`) avant d'écrire le composant. Sans cette étape, les variables typographiques tombent sur `system-ui`.
+5. **Appliquer les règles de nettoyage** : Supprimer les attributs de debug MCP, les fallbacks CSS, et appliquer les règles d'animation (Framer Motion / CSS) définies ci-dessous.
 
 ---
 
@@ -59,7 +60,7 @@ Classes disponibles dans `_tokens.css` : `typo-headline-md`, `typo-headline-sm`,
 Les assets téléchargés depuis `localhost:3845` (serveur MCP) sont des **artefacts internes Figma** : dimensions non standard (`viewBox="0 0 2 2"`), variables CSS Figma internes (`fill="var(--fill-0, white)"`). Ils ne correspondent pas aux exports Figma réels et ne doivent pas être utilisés tels quels.
 
 **Règle pour les icônes monochromes :**
-1. **Avant tout** : lire `public/icons/` — l'icône existe peut-être déjà
+1. **Avant tout** : lire `public/icons/` et lister explicitement dans ton rapport d'analyse les fichiers trouvés. Si l'icône nécessaire est présente, tu DOIS l'importer via SVGR — ne pas inline le SVG, ne pas recréer le fichier.
 2. Si elle n'existe pas : exporter manuellement depuis Figma (format SVG, taille 24×24)
 3. Vérifier que le SVG utilise `fill="currentColor"` (pas `fill="black"` ou autre valeur hardcodée)
 4. Déposer dans `public/icons/<nom-semantique>.svg`
@@ -74,6 +75,8 @@ import IconName from "@/public/icons/<nom-semantique>.svg"; // ex: ArrowIcon, Cl
 <img src="/icons/<nom-semantique>.svg" />
 const imgUrl = "http://localhost:3845/assets/...";
 ```
+
+**Exception — formes géométriques simples** (dot, cercle, ligne, trait) : une implémentation CSS pure n'est acceptable **que si aucun fichier SVG correspondant n'existe dans `public/icons/`**. Si le fichier existe, l'import SVGR est obligatoire, quelle que soit la simplicité de la forme.
 
 **Règle pour les assets statiques** (illustrations, images raster) : `<img>` est autorisé. Déposer dans `public/` avec un chemin sémantique.
 
@@ -94,7 +97,7 @@ Le MCP Figma enveloppe souvent les icônes dans un container (ex: `size-[16px]`)
 // ❌ Interdit
 <IconName width={16} height={16} />
 <span className="size-[16px]"><IconName /></span>
-<IconName className="size-[var(--icon-size-sm)]" />  // size-[var()] ne fonctionne pas de façon fiable — utiliser style={}
+<IconName className="size-[...]" />  // ❌ size-* avec var() CSS crashe Turbopack — utiliser style={}
 ```
 
 Tokens disponibles : `--icon-size-xs` (12px), `--icon-size-sm` (16px), `--icon-size-md` (20px), `--icon-size-lg` (24px), `--icon-size-xl` (32px).

@@ -9,7 +9,7 @@ Replace only `[FIGMA_NODE_URL]` with the URL of the Figma node to implement.
 ## 🇫🇷 Version française
 
 ```
-Applique BASE.md, ROLE-DEV.md, ROLE-FIGMA-MCP.md, ROLE-A11Y.md et ROLE-MOTION.md.
+Applique BASE.md, ROLE-DEV.md, ROLE-FIGMA-MCP.md, ROLE-A11Y.md, ROLE-MOTION.md et ROLE-FONTS.md.
 
 Je souhaite que tu intègres ce composant Figma en React :
 [URL_DU_NODE_FIGMA]
@@ -35,7 +35,7 @@ Génère le composant dans le dossier approprié (`components/ui/` si c'est un a
 ## 🇬🇧 English version
 
 ```
-Apply BASE.md, ROLE-DEV.md, ROLE-FIGMA-MCP.md, ROLE-A11Y.md and ROLE-MOTION.md.
+Apply BASE.md, ROLE-DEV.md, ROLE-FIGMA-MCP.md, ROLE-A11Y.md, ROLE-MOTION.md and ROLE-FONTS.md.
 
 I want you to implement this Figma component in React:
 [FIGMA_NODE_URL]
