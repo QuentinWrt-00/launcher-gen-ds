@@ -78,12 +78,29 @@ Aucune valeur hardcodée — tout passe par les tokens.
 
 ## 5. Animations
 
+- **CSS `transition`** : autorisé pour les changements de style purs au `:hover`/`:focus`/`:active` (`color`, `background-color`, `box-shadow`, `border`)
+- **Framer Motion** : obligatoire pour les entrées/sorties (`AnimatePresence`), animations de layout, séquences, et tout ce qui implique `transform`
+- Ne jamais animer `width`, `height`, `top`, `left` — préférer `transform` et `opacity`
 - Easing : `--fondations-motion-ease-*`
 - Durées : `--fondations-motion-duration-*`
-- Framer Motion pour toutes les interactions
-- Tableaux fallback déclarés comme constantes
-  stables hors du corps des hooks
+- Tableaux fallback déclarés comme constantes stables hors du corps des hooks
 - Aucune valeur d'animation hardcodée
+
+---
+
+## 5b. React Server Components — règle absolue
+
+Next.js App Router : tous les composants sont des Server Components par défaut.
+
+**Tout fichier utilisant `motion.*`, `AnimatePresence`, ou un hook Framer Motion DOIT déclarer `"use client"` en toute première ligne.**
+
+```tsx
+"use client"; // ← ligne 1, avant tout import
+
+import { motion } from "framer-motion";
+```
+
+L'oubli de cette directive fait crasher l'application immédiatement.
 
 ---
 

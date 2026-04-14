@@ -232,8 +232,24 @@ EOF
 echo ""
 echo "🧹  [5/5] Nettoyage du boilerplate Next.js…"
 
+cat > components/Providers.tsx << 'EOF'
+"use client";
+
+import { MotionConfig } from "framer-motion";
+
+/**
+ * Providers — composant client racine.
+ * Configure Framer Motion globalement :
+ * - reducedMotion="user" : respecte la préférence OS sans hook dans chaque composant
+ */
+export default function Providers({ children }: { children: React.ReactNode }) {
+  return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
+}
+EOF
+
 cat > app/layout.tsx << 'EOF'
 import type { Metadata } from "next";
+import Providers from "@/components/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -248,7 +264,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

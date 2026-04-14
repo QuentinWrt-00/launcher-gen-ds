@@ -99,17 +99,22 @@ Si un token semble manquant, vérifier dans `app/_tokens.css` avant d'ajouter qu
 
 ---
 
-## 6. Animations — Framer Motion obligatoire
+## 6. Animations et interactivité
 
 Le MCP génère des états statiques (default, hover, pressed, disabled).
-Ces états ne doivent **jamais** être implémentés via CSS `transition`.
 
-**Règle :**
-- Remplacer `<div>` / `<button>` interactifs par `motion.div` / `motion.button`
-- États hover → `whileHover`
-- États pressed → `whileTap`
-- Toujours appeler `useReducedMotion()` — si actif : `transition: { duration: 0 }`
-- Easing signature : `cubic-bezier(0.76, 0, 0.24, 1)` — durée : `300ms`
+**Règles :**
+
+- **Styles simples** (`color`, `background-color`, `box-shadow`, `border`) : utiliser les pseudo-classes Tailwind (`hover:`, `focus:`, `active:`) avec une transition CSS native. Exemple :
+  ```tsx
+  <button className="transition-colors duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] hover:bg-[var(--theme-color-...)]">
+  ```
+- **Animations complexes ou `transform`** : remplacer `<div>` / `<button>` par `motion.div` / `motion.button`
+  - États hover → `whileHover`
+  - États pressed → `whileTap`
+  - `reducedMotion` géré globalement — ne pas appeler `useReducedMotion()` dans le composant (voir `components/Providers.tsx`)
+  - Easing signature : `cubic-bezier(0.76, 0, 0.24, 1)` — durée : `300ms`
+- **"use client"** : dès qu'un `motion.*` est introduit dans le fichier, voir BASE.md §5b.
 
 ---
 
