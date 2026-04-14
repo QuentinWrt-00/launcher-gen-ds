@@ -94,6 +94,7 @@ Le MCP Figma enveloppe souvent les icônes dans un container (ex: `size-[16px]`)
 // ❌ Interdit
 <IconName width={16} height={16} />
 <span className="size-[16px]"><IconName /></span>
+<IconName className="size-[var(--icon-size-sm)]" />  // size-[var()] ne fonctionne pas de façon fiable — utiliser style={}
 ```
 
 Tokens disponibles : `--icon-size-xs` (12px), `--icon-size-sm` (16px), `--icon-size-md` (20px), `--icon-size-lg` (24px), `--icon-size-xl` (32px).
