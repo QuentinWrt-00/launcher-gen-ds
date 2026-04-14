@@ -17,14 +17,19 @@ const IMPORT_LINE = '@import "./_tokens.css";';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** "collection.path.key" → "--collection-path-key"
- *  - Corrige la faute Figma "sementic" → supprimé (inutile en CSS)
- *  - Supprime "primitive" et "semantic" : redondants côté CSS, utiles seulement dans Figma
+ *  Normalizations applied:
+ *  - Removes "primitive" / "semantic" / "sementic" (Figma artefacts, redundant in CSS)
+ *  - "typographie" → "typography"  (frenglish fix)
+ *  - "tablette"    → "tablet"      (French → English)
  */
 function toVar(tokenPath) {
   return '--' + tokenPath
     .replace(/\./g, '-')
     .replace(/-sementic-|-semantic-/g, '-')
-    .replace(/-primitive-/g, '-');
+    .replace(/-primitive-/g, '-')
+    .replace(/^typographie(-|$)/, 'typography$1')
+    .replace(/-typographie(-|$)/g, '-typography$1')
+    .replace(/-tablette(-|$)/g, '-tablet$1');
 }
 
 /** "4px" → "0.25rem", "0px" → "0" */
@@ -48,8 +53,11 @@ function formatCssValue(value, type) {
     case 'cubicBezier':
       if (Array.isArray(value)) return `cubic-bezier(${value.join(', ')})`;
       return String(value).trim();
-    case 'fontFamily':
-      return Array.isArray(value) ? value.map(f => `"${f}"`).join(', ') : `"${value}"`;
+    case 'fontFamily': {
+      const quoted = Array.isArray(value) ? value.map(f => `"${f}"`).join(', ') : `"${value}"`;
+      // Generic fallback — override to "Georgia, serif" etc. if the brand font is a serif.
+      return `${quoted}, system-ui, sans-serif`;
+    }
     case 'fontWeight':
       return String(value);
     case 'dimension':
@@ -87,18 +95,23 @@ console.log(`\n📥  Lecture   : ${INPUT}`);
 
 const tokens = JSON.parse(fs.readFileSync(INPUT, 'utf8'));
 
+// Read mobile breakpoint value from token — avoids hardcoding it in the @media rule.
+// Falls back to 768px if the breakpoints collection or mobile token is absent.
+const mobileBreakpoint = tokens?.breakpoints?.mobile?.$value ?? '768px';
+
 // Groupes de collections → sections CSS commentées
 const SECTION_LABELS = {
-  colors:          'Couleurs (primitives + sémantiques)',
-  radius:          'Rayon de bordure',
-  opacity:         'Opacité',
-  'typographie':   'Typographie',
-  spacings:        'Espacements',
-  shadow:          'Ombres',
-  'borders-width': 'Largeurs de bordure',
-  'icon-size':     'Tailles d\'icône',
-  motion:          'Motion (durées + easing)',
-  blur:            'Flou (layer / backdrop)',
+  colors:          'Colors (primitives + semantic)',
+  radius:          'Border radius',
+  opacity:         'Opacity',
+  'typographie':   'Typography',
+  spacings:        'Spacing',
+  shadow:          'Shadows',
+  'borders-width': 'Border widths',
+  'icon-size':     'Icon sizes',
+  motion:          'Motion (duration + easing)',
+  blur:            'Blur (layer / backdrop)',
+  breakpoints:     'Breakpoints',
 };
 
 const allLines = [
@@ -123,7 +136,7 @@ for (const [collection, data] of Object.entries(tokens)) {
   // Shorthand box-shadow après les tokens shadow décomposés
   if (collection === 'shadow') {
     allLines.push('');
-    allLines.push('  /* ─── Ombres (shorthand) ─── */');
+    allLines.push('  /* ─── Shadows (shorthand) ─── */');
     for (const size of ['sm', 'md', 'lg']) {
       allLines.push(`  --shadow-${size}: var(--shadow-${size}-offsetX) var(--shadow-${size}-offsetY) var(--shadow-${size}-blur) var(--shadow-${size}-spread) var(--shadow-${size}-color);`);
     }
@@ -152,7 +165,7 @@ if (compositeStyles.length > 0) {
   allLines.push('/* ⚠️  NE PAS MODIFIER MANUELLEMENT — relancer `npm run sync-tokens` */');
 
   for (const [id] of compositeStyles) {
-    const p = `--typographie-${id}`;
+    const p = `--typography-${id}`;
     allLines.push('');
     allLines.push(`@utility typo-${id} {`);
     allLines.push(`  font-family: var(${p}-font-family);`);
@@ -195,7 +208,7 @@ if (mobileOverrides.length > 0) {
   allLines.push('');
   allLines.push('/* ─── Overrides mobiles (mode 2008:0 Figma, auto-généré) ─── */');
   allLines.push('/* ⚠️  NE PAS MODIFIER MANUELLEMENT — relancer `npm run sync-tokens` */');
-  allLines.push('@media (max-width: 768px) {');
+  allLines.push(`@media (max-width: ${mobileBreakpoint}) {`);
   allLines.push('  :root {');
   allLines.push(...mobileOverrides);
   allLines.push('  }');
@@ -253,8 +266,8 @@ if (fs.existsSync(GLOBALS)) {
     '@import "./_tokens.css";',
     '',
     '@theme inline {',
-    '  --font-sans: var(--typographie-font-family-secondary);',
-    '  --font-serif: var(--typographie-font-family-primary);',
+    '  --font-sans: var(--typography-font-family-secondary);',
+    '  --font-serif: var(--typography-font-family-primary);',
     '}',
     '',
     'body {',
