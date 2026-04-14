@@ -120,8 +120,9 @@ Le MCP génère des états statiques (default, hover, pressed, disabled).
 
 - **Styles simples** (`color`, `background-color`, `box-shadow`, `border`) : utiliser les pseudo-classes Tailwind (`hover:`, `focus:`, `active:`) avec une transition CSS native. Exemple :
   ```tsx
-  <button className="transition-colors duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] hover:bg-[var(--theme-color-...)]">
+  <button className="transition-colors duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] hover:bg-[var(--theme-color-surface-hover)]">
   ```
+  🚨 **Le token exact doit être résolu via `app/_tokens.css` (étape 2 du protocole). Ne jamais écrire `...` comme placeholder — le parseur CSS le rejette.**
 - **Animations complexes ou `transform`** : remplacer `<div>` / `<button>` par `motion.div` / `motion.button`
   - États hover → `whileHover`
   - États pressed → `whileTap`
