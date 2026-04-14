@@ -95,9 +95,12 @@ console.log(`\n📥  Lecture   : ${INPUT}`);
 
 const tokens = JSON.parse(fs.readFileSync(INPUT, 'utf8'));
 
-// Read mobile breakpoint value from token — avoids hardcoding it in the @media rule.
-// Falls back to 768px if the breakpoints collection or mobile token is absent.
-const mobileBreakpoint = tokens?.breakpoints?.mobile?.$value ?? '768px';
+// Read breakpoint values from tokens — drives both @media rules and Tailwind @theme.
+// "tablette" is the Figma FR variable name; "tablet" is the normalized fallback.
+const bp = tokens?.breakpoints ?? {};
+const mobileBreakpoint  = bp.mobile?.$value                    ?? '768px';
+const tabletBreakpoint  = (bp.tablet  ?? bp.tablette)?.$value  ?? '1024px';
+const desktopBreakpoint = bp.desktop?.$value                   ?? '1280px';
 
 // Groupes de collections → sections CSS commentées
 const SECTION_LABELS = {
@@ -261,14 +264,21 @@ if (fs.existsSync(SHOWCASE_FILE) && compositeStyles.length > 0) {
 // ─── Réécriture de globals.css (zéro hardcode, tokens uniquement) ────────────
 
 if (fs.existsSync(GLOBALS)) {
+  // @theme inline — fonts + breakpoints driven by Figma token values
+  const themeLines = [
+    '@theme inline {',
+    '  --font-sans:  var(--typography-font-family-secondary);',
+    '  --font-serif: var(--typography-font-family-primary);',
+  ];
+  if (tabletBreakpoint)  themeLines.push(`  --breakpoint-tablet:  ${tabletBreakpoint};`);
+  if (desktopBreakpoint) themeLines.push(`  --breakpoint-desktop: ${desktopBreakpoint};`);
+  themeLines.push('}');
+
   const cleanGlobals = [
     '@import "tailwindcss";',
     '@import "./_tokens.css";',
     '',
-    '@theme inline {',
-    '  --font-sans: var(--typography-font-family-secondary);',
-    '  --font-serif: var(--typography-font-family-primary);',
-    '}',
+    ...themeLines,
     '',
     'body {',
     '  background: var(--colors-background-neutral);',
@@ -277,7 +287,7 @@ if (fs.existsSync(GLOBALS)) {
     '',
   ].join('\n');
   fs.writeFileSync(GLOBALS, cleanGlobals, 'utf8');
-  console.log(`✅  globals.css réécrit (zéro hardcode)`);
+  console.log(`✅  globals.css réécrit — breakpoints Tailwind : tablet=${tabletBreakpoint}, desktop=${desktopBreakpoint}`);
 }
 
 console.log(`\n🎉  Terminé — ${tokenCount} tokens CSS prêts.\n`);
