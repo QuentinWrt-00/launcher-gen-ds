@@ -294,33 +294,37 @@ if (fs.existsSync(SHOWCASE_FILE) && compositeStyles.length > 0) {
   console.log(`✅  Safelist   : ${typoClasses.length} classes typo-* mises à jour dans DesignTokenShowcase.tsx`);
 }
 
-// ─── Réécriture de globals.css (zéro hardcode, tokens uniquement) ────────────
+// ─── Mise à jour chirurgicale de globals.css ─────────────────────────────────
+// Ne touche QUE : (1) l'import _tokens.css, (2) le bloc @theme inline.
+// Tout le reste (body, custom CSS) est préservé tel quel.
 
 if (fs.existsSync(GLOBALS)) {
-  // @theme inline — fonts + breakpoints driven by Figma token values
-  const themeLines = [
+  const themeBlock = [
     '@theme inline {',
     '  --font-sans:  var(--typography-font-family-secondary);',
     '  --font-serif: var(--typography-font-family-primary);',
   ];
-  if (tabletBreakpoint)  themeLines.push(`  --breakpoint-tablet:  ${tabletBreakpoint};`);
-  if (desktopBreakpoint) themeLines.push(`  --breakpoint-desktop: ${desktopBreakpoint};`);
-  themeLines.push('}');
+  if (tabletBreakpoint)  themeBlock.push(`  --breakpoint-tablet:  ${tabletBreakpoint};`);
+  if (desktopBreakpoint) themeBlock.push(`  --breakpoint-desktop: ${desktopBreakpoint};`);
+  themeBlock.push('}');
+  const themeStr = themeBlock.join('\n');
 
-  const cleanGlobals = [
-    '@import "tailwindcss";',
-    '@import "./_tokens.css";',
-    '',
-    ...themeLines,
-    '',
-    'body {',
-    '  background: var(--color-background-neutral);',
-    '  color: var(--color-content-primary);',
-    '}',
-    '',
-  ].join('\n');
-  fs.writeFileSync(GLOBALS, cleanGlobals, 'utf8');
-  console.log(`✅  globals.css réécrit — breakpoints Tailwind : tablet=${tabletBreakpoint}, desktop=${desktopBreakpoint}`);
+  let content = fs.readFileSync(GLOBALS, 'utf8');
+
+  // 1) S'assurer que l'import _tokens.css est présent juste après tailwindcss
+  if (!content.includes(IMPORT_LINE)) {
+    content = content.replace('@import "tailwindcss";', `@import "tailwindcss";\n${IMPORT_LINE}`);
+  }
+
+  // 2) Remplacer le bloc @theme inline existant — ou l'ajouter à la fin
+  if (/@theme inline \{[\s\S]*?\}/.test(content)) {
+    content = content.replace(/@theme inline \{[\s\S]*?\}/, themeStr);
+  } else {
+    content = content.trimEnd() + '\n\n' + themeStr + '\n';
+  }
+
+  fs.writeFileSync(GLOBALS, content, 'utf8');
+  console.log(`✅  globals.css mis à jour — breakpoints Tailwind : tablet=${tabletBreakpoint}, desktop=${desktopBreakpoint}`);
 }
 
 console.log(`\n🎉  Terminé — ${tokenCount} tokens CSS prêts.\n`);
