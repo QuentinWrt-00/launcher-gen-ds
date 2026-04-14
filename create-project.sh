@@ -66,6 +66,7 @@ echo ""
 echo "📁  [3/4] Création de la structure…"
 mkdir -p components/ui components/blocks components/modules components/pages
 mkdir -p public/fonts
+mkdir -p public/icons && touch public/icons/.gitkeep
 mkdir -p .cursor/rules
 
 # ── 5. Copie des scripts de sync + rules + CLAUDE.md ─────────────
@@ -114,6 +115,7 @@ components/
 └── pages/              → templates (assemblages de modules)
 
 public/fonts/           → fonts en .woff2
+public/icons/           → icônes SVG (fill="currentColor", importées via SVGR)
 .cursor/rules/          → règles par rôle pour Cursor
 ```
 

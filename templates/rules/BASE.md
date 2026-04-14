@@ -41,6 +41,7 @@ components/
 
 public/                 → assets statiques
 public/fonts/           → fonts en .woff2
+public/icons/           → icônes SVG (fill="currentColor", importées via SVGR)
 ```
 
 ### Conventions de nommage

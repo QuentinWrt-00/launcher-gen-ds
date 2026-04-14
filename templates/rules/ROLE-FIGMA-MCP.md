@@ -46,10 +46,11 @@ Classes disponibles dans `_tokens.css` : `typo-headline-md`, `typo-headline-sm`,
 Les assets téléchargés depuis `localhost:3845` (serveur MCP) sont des **artefacts internes Figma** : dimensions non standard (`viewBox="0 0 2 2"`), variables CSS Figma internes (`fill="var(--fill-0, white)"`). Ils ne correspondent pas aux exports Figma réels et ne doivent pas être utilisés tels quels.
 
 **Règle pour les icônes monochromes :**
-1. Exporter l'icône manuellement depuis Figma (format SVG, taille 24×24)
-2. Remplacer `fill="black"` (ou toute couleur hardcodée) par `fill="currentColor"`
-3. Déposer dans `public/icons/<nom-semantique>.svg`
-4. Importer via SVGR — jamais via `<img>`
+1. **Avant tout** : lire `public/icons/` — l'icône existe peut-être déjà
+2. Si elle n'existe pas : exporter manuellement depuis Figma (format SVG, taille 24×24)
+3. Vérifier que le SVG utilise `fill="currentColor"` (pas `fill="black"` ou autre valeur hardcodée)
+4. Déposer dans `public/icons/<nom-semantique>.svg`
+5. Importer via SVGR — jamais via `<img>`
 
 ```tsx
 // ✅ Correct
