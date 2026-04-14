@@ -314,8 +314,8 @@ if (fs.existsSync(GLOBALS)) {
     ...themeLines,
     '',
     'body {',
-    '  background: var(--colors-background-neutral);',
-    '  color: var(--colors-content-primary);',
+    '  background: var(--color-background-neutral);',
+    '  color: var(--color-content-primary);',
     '}',
     '',
   ].join('\n');
