@@ -61,8 +61,11 @@ Les assets téléchargés depuis `localhost:3845` (serveur MCP) sont des **artef
 
 **Règle pour les icônes monochromes :**
 1. **Avant tout** : lire `public/icons/` et lister explicitement dans ton rapport d'analyse les fichiers trouvés. Si l'icône nécessaire est présente, tu DOIS l'importer via SVGR — ne pas inline le SVG, ne pas recréer le fichier.
-2. Si elle n'existe pas → **stopper immédiatement**. Lister les icônes manquantes dans le rapport final. Ne jamais extraire le SVG depuis Figma, ne jamais créer de placeholder, ne jamais inventer d'implémentation alternative (ni CSS pure, ni `<div>`, ni inline SVG). Informer l'utilisateur qu'il doit déposer les fichiers SVG manquants dans `public/icons/` puis lancer `npm run optimize-icons` — ce script normalise automatiquement `fill` et `stroke` en `currentColor` et supprime les artefacts Figma.
-3. Importer via SVGR — jamais via `<img>`
+2. **Si le fichier existe mais que `fill` n'est pas `currentColor`** → **stopper immédiatement**. Ne pas modifier le fichier, ne pas créer un nouveau fichier. Informer l'utilisateur que le SVG n'a pas encore été optimisé et lui demander de lancer `npm run optimize-icons`. Ce script normalise `fill` et `stroke` en `currentColor` en place.
+3. Si elle n'existe pas → **stopper immédiatement**. Lister les icônes manquantes dans le rapport final. Ne jamais extraire le SVG depuis Figma, ne jamais créer de placeholder, ne jamais inventer d'implémentation alternative (ni CSS pure, ni `<div>`, ni inline SVG). Informer l'utilisateur qu'il doit déposer les fichiers SVG manquants dans `public/icons/` puis lancer `npm run optimize-icons` — ce script normalise automatiquement `fill` et `stroke` en `currentColor` et supprime les artefacts Figma.
+4. Importer via SVGR — jamais via `<img>`
+
+🚨 **Ne jamais créer de fichier SVG dans `public/icons/`** — les seuls fichiers légitimes sont ceux déposés manuellement par l'utilisateur.
 
 ```tsx
 // ✅ Correct
@@ -73,8 +76,6 @@ import IconName from "@/public/icons/<nom-semantique>.svg"; // ex: ArrowIcon, Cl
 <img src="/icons/<nom-semantique>.svg" />
 const imgUrl = "http://localhost:3845/assets/...";
 ```
-
-**Exception — formes géométriques simples** (dot, cercle, ligne, trait) : une implémentation CSS pure n'est acceptable **que si aucun fichier SVG correspondant n'existe dans `public/icons/`**. Si le fichier existe, l'import SVGR est obligatoire, quelle que soit la simplicité de la forme.
 
 **Règle pour les assets statiques** (illustrations, images raster) : `<img>` est autorisé. Déposer dans `public/` avec un chemin sémantique.
 
