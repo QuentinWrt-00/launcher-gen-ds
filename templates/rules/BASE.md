@@ -105,6 +105,18 @@ L'oubli de cette directive fait crasher l'application immédiatement.
 
 ---
 
+## 5c. Workflow d'implémentation — règle absolue
+
+Toute implémentation suit **3 phases non-réversibles** :
+
+1. **Collecter** — appels outils en parallèle (Figma, tokens, composants, icons). Une seule passe.
+2. **Décider** — figer les choix une fois (animation CSS ou Framer Motion, interface des props, mapping tokens). Si un choix reste bloquant → le soumettre à l'utilisateur. Ne jamais débattre en interne.
+3. **Coder** — écrire le composant sans revenir aux phases précédentes.
+
+Retourner en arrière = soumettre la question à l'utilisateur, pas re-analyser.
+
+---
+
 ## 6. Lecture Figma — Instructions MCP
 
 Lire UNIQUEMENT les collections de variables

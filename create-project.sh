@@ -125,6 +125,7 @@ public/icons/           → icônes SVG (fill="currentColor", importées via SVG
 
 ## Conventions de code
 
+- All code comments, JSDoc, and inline documentation in **English**
 - Props typées exhaustivement — interface dédiée par composant
 - JSDoc sur chaque prop
 - Exports : named ET default
@@ -132,6 +133,7 @@ public/icons/           → icônes SVG (fill="currentColor", importées via SVG
 - Imports : React → libs externes → composants → types
 - Composants découpés si > 80 lignes
 - Fichiers et dossiers : PascalCase
+- SVGR icons: size via `style={{ width, height }}` only — never `size-[var(...)]` (crashes Turbopack)
 
 ---
 

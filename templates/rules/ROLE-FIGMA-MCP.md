@@ -18,6 +18,13 @@ Avant d'écrire la moindre ligne de code pour un composant, tu dois suivre scrup
 3. **Vérifier les Assets** : Explorer le dossier `public/icons/` pour vérifier si les SVG nécessaires existent déjà avant de proposer un export.
 4. **Vérifier les fonts** : Vérifier que `app/fonts.css` existe et est importé dans `globals.css`. Si absent, créer le fichier avec les `@font-face` des polices du projet (voir `ROLE-FONTS.md`) avant d'écrire le composant. Sans cette étape, les variables typographiques tombent sur `system-ui`.
 5. **Appliquer les règles de nettoyage** : Supprimer les attributs de debug MCP, les fallbacks CSS, et appliquer les règles d'animation (Framer Motion / CSS) définies ci-dessous.
+6. **Valider les décisions avant de coder** : Avant d'écrire la première ligne, figer explicitement :
+   - Animation : `CSS transition` ou `motion.*` (appliquer §6 — pas de cas mixte non tranché)
+   - Props : liste figée de l'interface (`label`, `disabled`, `className`…)
+   - Tokens : mapping Figma → CSS complété, variables manquantes signalées
+   - Assets : icônes présentes ✓ / manquantes → bloquer et informer l'utilisateur
+
+   Ces 4 points résolus = coder immédiatement. Un seul point non résolu = poser la question à l'utilisateur, ne pas débattre en interne.
 
 ---
 
