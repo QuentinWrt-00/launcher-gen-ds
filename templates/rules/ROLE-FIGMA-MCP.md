@@ -61,10 +61,8 @@ Les assets téléchargés depuis `localhost:3845` (serveur MCP) sont des **artef
 
 **Règle pour les icônes monochromes :**
 1. **Avant tout** : lire `public/icons/` et lister explicitement dans ton rapport d'analyse les fichiers trouvés. Si l'icône nécessaire est présente, tu DOIS l'importer via SVGR — ne pas inline le SVG, ne pas recréer le fichier.
-2. Si elle n'existe pas : exporter manuellement depuis Figma (format SVG, taille 24×24)
-3. Vérifier que le SVG utilise `fill="currentColor"` (pas `fill="black"` ou autre valeur hardcodée)
-4. Déposer dans `public/icons/<nom-semantique>.svg`
-5. Importer via SVGR — jamais via `<img>`
+2. Si elle n'existe pas → **stopper immédiatement**. Lister les icônes manquantes dans le rapport final. Ne jamais extraire le SVG depuis Figma, ne jamais créer de placeholder, ne jamais inventer d'implémentation alternative (ni CSS pure, ni `<div>`, ni inline SVG). Informer l'utilisateur qu'il doit déposer les fichiers SVG manquants dans `public/icons/` puis lancer `npm run optimize-icons` — ce script normalise automatiquement `fill` et `stroke` en `currentColor` et supprime les artefacts Figma.
+3. Importer via SVGR — jamais via `<img>`
 
 ```tsx
 // ✅ Correct

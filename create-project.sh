@@ -59,7 +59,7 @@ cd "$TARGET"
 echo ""
 echo "📦  [2/4] Installation des dépendances…"
 npm install framer-motion clsx tailwind-merge
-npm install --save-dev @svgr/webpack
+npm install --save-dev @svgr/webpack svgo
 
 # ── 3. Structure des dossiers ────────────────────────────────────
 echo ""
@@ -74,9 +74,11 @@ echo ""
 echo "📋  [4/4] Copie des règles et scripts…"
 
 mkdir -p scripts
-cp "$SCRIPT_DIR/convert-tokens.js" scripts/
-cp "$SCRIPT_DIR/tokens-to-css.js"  scripts/
+cp "$SCRIPT_DIR/convert-tokens.js"          scripts/
+cp "$SCRIPT_DIR/tokens-to-css.js"           scripts/
+cp "$TEMPLATES/optimize-icons.js"           scripts/
 npm pkg set scripts.sync-tokens="node scripts/convert-tokens.js && node scripts/tokens-to-css.js" --silent
+npm pkg set scripts.optimize-icons="node scripts/optimize-icons.js" --silent
 
 # figma-design-tokens.json est privé et généré par plugin — ne pas versionner
 echo "" >> .gitignore
