@@ -58,7 +58,7 @@ cd "$TARGET"
 # ── 2. Dépendances supplémentaires ───────────────────────────────
 echo ""
 echo "📦  [2/4] Installation des dépendances…"
-npm install framer-motion
+npm install framer-motion clsx tailwind-merge
 npm install --save-dev @svgr/webpack
 
 # ── 3. Structure des dossiers ────────────────────────────────────
@@ -147,12 +147,10 @@ Les `Fondations` ne sont **jamais** appelées directement dans les composants.
 
 ## Animations
 
-- Framer Motion sur tous les éléments interactifs — jamais de CSS transition
-- Easing : `--fondations-motion-ease-*`
-- Durées : `--fondations-motion-duration-*`
-- Courbe signature : `cubic-bezier(0.76, 0, 0.24, 1)`
-- Durées entre 300ms et 600ms
-- `useReducedMotion` respecté sur chaque composant animé
+- **CSS `transition`** : autorisé pour les changements de style purs au `:hover`/`:focus`/`:active` (`color`, `background-color`, `box-shadow`, `border`)
+- **Framer Motion** : obligatoire pour les entrées/sorties, animations de layout, séquences, et tout ce qui implique `transform`
+- Easing : `cubic-bezier(0.76, 0, 0.24, 1)` — durées entre 300ms et 600ms
+- `reducedMotion` géré globalement via `components/Providers.tsx` — ne pas appeler `useReducedMotion()` dans les composants
 - Entrées lentes, sorties rapides
 
 ---
@@ -175,6 +173,47 @@ Ignorer : fills, styles locaux, couleurs directement appliquées sur les calques
 - `eslint .` passe sans erreur
 - Aucune valeur hardcodée introduite
 - Rapport de modifications généré
+
+---
+
+## Classes CSS — règle absolue
+
+Toujours utiliser `cn` (de `@/lib/utils`) pour composer les classes Tailwind.
+Ne jamais utiliser `.filter(Boolean).join(" ")` ni concaténation de strings.
+
+---
+
+## Référence rapide — Tokens CSS
+
+> Cheat sheet pour éviter de relire `app/_tokens.css` en entier à chaque session.
+> Si un token est absent de cette liste, lire `_tokens.css` pour vérifier.
+
+**Containers** : `--color-container-primary` `-hover` `-pressed` | `--color-container-secondary` `-hover` `-pressed` | `--color-container-disable`
+**Content** : `--color-content-primary` `-hover` `-pressed` | `--color-content-on-primary` | `--color-content-on-secondary` | `--color-content-on-disable`
+**Borders** : `--border-primary` `-hover` `-pressed` | `--border-secondary` | `--border-disable`
+**Border widths** : `--borders-width-thin` (1px) · `--borders-width-default` (2px) · `--borders-width-thick` (3px)
+**Spacing courants** : `--spacing-4` · `--spacing-8` · `--spacing-12` · `--spacing-16` · `--spacing-20` · `--spacing-24` · `--spacing-32` · `--spacing-48`
+**Icons** : `--icon-size-xs` (12px) · `--icon-size-sm` (16px) · `--icon-size-md` (20px) · `--icon-size-lg` (24px) · `--icon-size-xl` (32px)
+**Motion** : `--motion-duration-normal` (300ms) · signature easing `cubic-bezier(0.76, 0, 0.24, 1)`
+**Typo** : `typo-headline-md/sm` · `typo-body-lg/lg-alt/md/md-alt/sm` · `typo-label-lg-reg/light/caps` · `typo-label-md-reg/light/caps/alt` · `typo-label-sm-reg/light/caps/alt`
+
+---
+
+## Icônes disponibles (`public/icons/`)
+
+> Mettre à jour cette liste après chaque ajout d'icône dans le projet.
+
+_(vide — liste à compléter après sync-tokens ou ajout manuel)_
+
+---
+
+## Composants existants
+
+> Mettre à jour cette liste après chaque génération de composant.
+
+| Composant | Dossier | Description |
+|---|---|---|
+| _(aucun)_ | — | — |
 
 ---
 
@@ -231,6 +270,16 @@ EOF
 # ── 6. Nettoyage du boilerplate Next.js ──────────────────────────
 echo ""
 echo "🧹  [5/5] Nettoyage du boilerplate Next.js…"
+
+mkdir -p lib
+cat > lib/utils.ts << 'EOF'
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+EOF
 
 cat > components/Providers.tsx << 'EOF'
 "use client";

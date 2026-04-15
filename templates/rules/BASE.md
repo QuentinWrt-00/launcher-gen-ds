@@ -85,6 +85,7 @@ Aucune valeur hardcodée — tout passe par les tokens.
 - Durées : `--fondations-motion-duration-*`
 - Tableaux fallback déclarés comme constantes stables hors du corps des hooks
 - Aucune valeur d'animation hardcodée
+- `reducedMotion` géré globalement via `components/Providers.tsx` — ne pas appeler `useReducedMotion()` dans les composants
 
 ---
 
