@@ -87,6 +87,10 @@ echo "figma-design-tokens.json" >> .gitignore
 
 cp "$TEMPLATES/rules/"*.md .cursor/rules/
 
+# Concatène toutes les rules en un seul fichier → à mettre en cache dans Claude Code
+# pour éviter de recharger le contexte à chaque session et réduire la consommation de tokens
+cat "$TEMPLATES/rules/"*.md > CONTEXTE_GLOBAL.md
+
 cat > CLAUDE.md << 'CLAUDE'
 # Règles du projet
 
