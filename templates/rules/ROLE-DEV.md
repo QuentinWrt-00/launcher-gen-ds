@@ -42,8 +42,9 @@ export function cn(...inputs: ClassValue[]) {
 
 ## SVGR icons — sizing rule
 
-Never size an SVGR component via Tailwind arbitrary classes. `size-[var(...)]` crashes Turbopack.
-Always use inline `style` directly on the SVG component.
+Never use CSS variables inside Tailwind arbitrary value classes — `size-[var(--token)]`,
+`w-[var(--token)]`, `w-[calc(var(--token-a)+var(--token-b))]`, etc. all crash Turbopack.
+Always use inline `style` for any value derived from a CSS token.
 
 ```tsx
 // ✅ Correct
@@ -51,6 +52,7 @@ Always use inline `style` directly on the SVG component.
 
 // ❌ Forbidden
 <IconName className="size-[var(--icon-size-sm)]" />
+<span className="w-[calc(var(--icon-size-sm)+var(--spacing-4))]" />
 <IconName width={16} height={16} />
 ```
 

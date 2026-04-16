@@ -50,10 +50,10 @@ Ces propriétés ne doivent **jamais** apparaître dans les composants.
 **Règle :** remplacer l'ensemble des classes `font-[...]`, `text-[length:...]`, `leading-[...]`, `tracking-[...]` qui forment un style typographique par la classe utilitaire `typo-*` correspondante.
 
 ```
-MCP génère   →  font-[family-name:var(--typography-label-md-alt\/font-family,...)]
-                text-[length:var(--typography-label-md-alt\/font-size,...)]
-                leading-[var(--typography-label-md-alt\/line-height,...)]
-                tracking-[var(--typography-label-md-alt\/letter-spacing,...)]
+MCP génère   →  font-[family-name:var(--typography-label-md-alt-font-family)]
+                text-[length:var(--typography-label-md-alt-font-size)]
+                leading-[var(--typography-label-md-alt-line-height)]
+                tracking-[var(--typography-label-md-alt-letter-spacing)]
 
 À écrire     →  typo-label-md-alt
 ```
@@ -103,7 +103,8 @@ Le MCP Figma enveloppe souvent les icônes dans un container (ex: `size-[16px]`)
 // ❌ Interdit
 <IconName width={16} height={16} />
 <span className="size-[16px]"><IconName /></span>
-<IconName className="size-[...]" />  // ❌ size-* avec var() CSS crashe Turbopack — utiliser style={}
+<IconName className="size-[var(--token)]" />  // ❌ var() dans une arbitrary value Tailwind crashe Turbopack
+<span className="w-[calc(var(--token-a)+var(--token-b))]" />  // ❌ idem — utiliser style={}
 ```
 
 Tokens disponibles : `--icon-size-xs` (12px), `--icon-size-sm` (16px), `--icon-size-md` (20px), `--icon-size-lg` (24px), `--icon-size-xl` (32px).
