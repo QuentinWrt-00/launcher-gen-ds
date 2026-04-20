@@ -137,7 +137,7 @@ public/icons/           → icônes SVG (fill="currentColor", importées via SVG
 - Imports : React → libs externes → composants → types
 - Composants découpés si > 80 lignes
 - Fichiers et dossiers : PascalCase
-- SVGR icons: size via `style={{ width, height }}` only — never `size-[var(...)]` (crashes Turbopack)
+- SVGR icons : `style={{ width: "var(--icon-size-sm)", height: "var(--icon-size-sm)" }}` uniquement — jamais `size-[var(...)]` (crash Turbopack)
 
 ---
 
@@ -150,6 +150,18 @@ Les composants consomment uniquement :
 
 Les `Fondations` ne sont **jamais** appelées directement dans les composants.
 **Aucune valeur hardcodée** — tout passe par les tokens.
+
+---
+
+## Workflow d'implémentation — règle absolue
+
+Toute implémentation suit **3 phases non-réversibles** :
+
+1. **Collecter** — appels outils en parallèle (Figma, tokens, composants, icons). Une seule passe.
+2. **Décider** — figer les choix une fois (animation CSS ou Framer Motion, interface des props, mapping tokens). Si un choix reste bloquant → le soumettre à l'utilisateur. Ne jamais débattre en interne.
+3. **Coder** — écrire le composant sans revenir aux phases précédentes.
+
+Retourner en arrière = soumettre la question à l'utilisateur, pas re-analyser.
 
 ---
 
@@ -231,6 +243,8 @@ _(vide — liste à compléter après sync-tokens ou ajout manuel)_
 |---|---|
 | `BASE.md` | Socle technique — toujours actif |
 | `ROLE-DEV.md` | Développement composants React/TS |
+| `ROLE-A11Y.md` | Audit et implémentation accessibilité |
+| `ROLE-FIGMA-MCP.md` | Import composants depuis Figma via MCP |
 | `ROLE-A11Y.md` | Audit et implémentation accessibilité |
 | `ROLE-AUDIT.md` | Audit code — génère un rapport avant toute modif |
 | `ROLE-MOTION.md` | Animations Framer Motion + performance |
@@ -339,7 +353,10 @@ EOF
 
 cat > app/globals.css << 'EOF'
 @import "tailwindcss";
+@import "./fonts.css";
 @import "./_tokens.css";
+@source "../components/**/*.{tsx,ts}";
+@source "../app/**/*.{tsx,ts}";
 
 @theme inline {
   --font-sans:  var(--typography-font-family-secondary);
@@ -352,6 +369,109 @@ body {
   background: var(--theme-color-background-default);
   color: var(--theme-color-content-default);
   font-family: var(--typography-font-family-secondary);
+}
+EOF
+
+# fonts.css — placeholder à remplir avec les @font-face du projet
+cat > app/fonts.css << 'EOF'
+/* Add @font-face declarations here.
+   Example:
+   @font-face {
+     font-family: "MyFont";
+     src: url("/fonts/MyFont-Regular.woff2") format("woff2");
+     font-weight: 400;
+     font-style: normal;
+     font-display: swap;
+   }
+*/
+EOF
+
+# ── ESLint config custom ─────────────────────────────────────────
+cat > eslint.config.mjs << 'EOF'
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+// Flags hardcoded px values in `style` JSX attributes (width/height only).
+// All icon sizes must go through CSS tokens: var(--icon-size-xs/sm/md/lg/xl).
+// Framer Motion animation props (animate, whileHover, etc.) are NOT style
+// attributes and are therefore not affected by this rule.
+const designSystemPlugin = {
+  rules: {
+    "no-hardcoded-px-in-style": {
+      meta: {
+        type: "problem",
+        messages: {
+          noHardcodedPx:
+            "Hardcoded pixel value in style prop. Use a CSS token instead — e.g. \"var(--icon-size-sm)\" instead of \"16px\".",
+        },
+      },
+      create(context) {
+        return {
+          JSXAttribute(node) {
+            if (node.name.name !== "style") return;
+            if (!node.value || node.value.type !== "JSXExpressionContainer") return;
+
+            const expr = node.value.expression;
+            if (expr.type !== "ObjectExpression") return;
+
+            for (const prop of expr.properties) {
+              if (prop.type !== "Property") continue;
+
+              const key = prop.key.name ?? prop.key.value;
+              if (key !== "width" && key !== "height") continue;
+
+              const val = prop.value;
+              const isHardcodedPxString =
+                val.type === "Literal" &&
+                typeof val.value === "string" &&
+                val.value.endsWith("px");
+              const isRawNumber =
+                val.type === "Literal" && typeof val.value === "number";
+
+              if (isHardcodedPxString || isRawNumber) {
+                context.report({ node: val, messageId: "noHardcodedPx" });
+              }
+            }
+          },
+        };
+      },
+    },
+  },
+};
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "framer/**",
+  ]),
+  {
+    plugins: { "design-system": designSystemPlugin },
+    rules: {
+      "design-system/no-hardcoded-px-in-style": "error",
+    },
+  },
+]);
+
+export default eslintConfig;
+EOF
+
+# ── Showcase page ─────────────────────────────────────────────────
+mkdir -p app/showcase
+cat > app/showcase/page.tsx << 'EOF'
+"use client";
+
+export default function ShowcasePage() {
+  return (
+    <main className="min-h-screen bg-[var(--theme-color-background-default)]">
+      {/* Add components here as you build them */}
+    </main>
+  );
 }
 EOF
 

@@ -3,10 +3,6 @@
 
 Tu es un senior développeur front-end React/TypeScript.
 
-## Language
-
-All code comments, JSDoc, and inline documentation must be written in **English**.
-
 ## Priorités
 - Composants découpés si > 80 lignes
 - Props typées exhaustivement, JSDoc sur chaque prop
@@ -39,24 +35,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 ```
-
-## SVGR icons — sizing rule
-
-Never use CSS variables inside Tailwind arbitrary value classes — `size-[var(--token)]`,
-`w-[var(--token)]`, `w-[calc(var(--token-a)+var(--token-b))]`, etc. all crash Turbopack.
-Always use inline `style` for any value derived from a CSS token.
-
-```tsx
-// ✅ Correct
-<IconName aria-hidden className="shrink-0" style={{ width: "var(--icon-size-sm)", height: "var(--icon-size-sm)" }} />
-
-// ❌ Forbidden
-<IconName className="size-[var(--icon-size-sm)]" />
-<span className="w-[calc(var(--icon-size-sm)+var(--spacing-4))]" />
-<IconName width={16} height={16} />
-```
-
-Available tokens: `--icon-size-xs` (12px) · `--icon-size-sm` (16px) · `--icon-size-md` (20px) · `--icon-size-lg` (24px) · `--icon-size-xl` (32px)
 
 ## Avant de livrer
 - tsc --noEmit sans erreur
