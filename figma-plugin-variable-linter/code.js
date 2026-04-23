@@ -139,53 +139,54 @@ function getSelectionBounds(selection) {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
+async function createBadge(label) {
+  var badge = figma.createFrame();
+  badge.name = 'badge:' + label;
+  badge.fills = [{ type: 'SOLID', color: { r: 1, g: 0.231, b: 0.188 } }];
+  badge.cornerRadius = 4;
+  badge.layoutMode = 'HORIZONTAL';
+  badge.primaryAxisSizingMode = 'AUTO';
+  badge.counterAxisSizingMode = 'AUTO';
+  badge.primaryAxisAlignItems = 'CENTER';
+  badge.counterAxisAlignItems = 'CENTER';
+  badge.paddingLeft = 8;
+  badge.paddingRight = 8;
+  badge.paddingTop = 4;
+  badge.paddingBottom = 4;
+
+  var text = figma.createText();
+  text.fontName = { family: 'Inter', style: 'Regular' };
+  text.characters = label;
+  text.fontSize = 10;
+  text.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+  badge.appendChild(text);
+
+  return badge;
+}
+
 async function createAuditOverlays(violations, selectionBounds) {
   clearAuditOverlays();
   if (violations.length === 0) return;
 
   await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
 
-  // Bloc unique positionné à droite de la bounding box de toute la sélection
+  // Bloc conteneur vertical positionné à droite de la sélection entière
   var container = figma.createFrame();
   container.name = AUDIT_FRAME_NAME;
-  container.fills = [{ type: 'SOLID', color: { r: 0.08, g: 0.08, b: 0.08 } }];
-  container.cornerRadius = 6;
+  container.fills = [];
+  container.clipsContent = false;
   container.layoutMode = 'VERTICAL';
   container.primaryAxisSizingMode = 'AUTO';
-  container.counterAxisSizingMode = 'FIXED';
-  container.resize(240, 10); // largeur fixe, hauteur auto
-  container.paddingLeft = 12;
-  container.paddingRight = 12;
-  container.paddingTop = 10;
-  container.paddingBottom = 10;
-  container.itemSpacing = 5;
+  container.counterAxisSizingMode = 'AUTO';
+  container.itemSpacing = 4;
   container.x = selectionBounds.x + selectionBounds.width + 24;
   container.y = selectionBounds.y;
 
-  // En-tête : nombre de violations
-  var header = figma.createText();
-  header.fontName = { family: 'Inter', style: 'Regular' };
-  header.characters = violations.length + ' violation' + (violations.length > 1 ? 's' : '');
-  header.fontSize = 11;
-  header.fills = [{ type: 'SOLID', color: { r: 1, g: 0.231, b: 0.188 } }];
-  container.appendChild(header);
-
-  // Ligne de séparation visuelle (frame de 1px)
-  var divider = figma.createFrame();
-  divider.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 0.1 } }];
-  divider.resize(216, 1);
-  divider.layoutAlign = 'STRETCH';
-  container.appendChild(divider);
-
-  // Une ligne par violation : "LayerName  ›  property: value"
-  violations.forEach(function(v) {
-    var row = figma.createText();
-    row.fontName = { family: 'Inter', style: 'Regular' };
-    row.characters = v.layerName + '  ›  ' + v.property + ': ' + v.rawValue;
-    row.fontSize = 10;
-    row.fills = [{ type: 'SOLID', color: { r: 0.85, g: 0.85, b: 0.85 } }];
-    container.appendChild(row);
-  });
+  for (var i = 0; i < violations.length; i++) {
+    var v = violations[i];
+    var badge = await createBadge(v.layerName + '  ›  ' + v.property + ': ' + v.rawValue);
+    container.appendChild(badge);
+  }
 
   figma.currentPage.appendChild(container);
 }
