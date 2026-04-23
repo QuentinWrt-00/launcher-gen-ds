@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AKQA Variable Linter</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 12px;
+  background: #FAF5F2;
+  color: #000;
+  padding: 20px;
+  width: 240px;
+}
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  letter-spacing: 0.02em;
+}
+button {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+#btn-run   { background: #000; color: #FAF5F2; margin-bottom: 8px; }
+#btn-clear { background: #e8e3df; color: #000; }
+button:hover    { opacity: 0.75; }
+button:disabled { opacity: 0.3; cursor: not-allowed; }
+#status {
+  font-size: 11px;
+  color: #555;
+  min-height: 16px;
+  margin: 12px 0;
+}
+#status.error   { color: #c0392b; }
+#status.success { color: #1a7a3c; }
+</style>
+</head>
+<body>
+
+<h2>Variable Linter</h2>
+<button id="btn-run">Run Audit</button>
+<div id="status"></div>
+<button id="btn-clear">Clear</button>
+
+<script>
+var status   = document.getElementById('status');
+var btnRun   = document.getElementById('btn-run');
+var btnClear = document.getElementById('btn-clear');
+
+btnRun.addEventListener('click', function() {
+  btnRun.disabled = true;
+  status.className = '';
+  status.textContent = 'Running…';
+  parent.postMessage({ pluginMessage: { type: 'run' } }, '*');
+});
+
+btnClear.addEventListener('click', function() {
+  status.className = '';
+  status.textContent = '';
+  parent.postMessage({ pluginMessage: { type: 'clear' } }, '*');
+});
+
+window.onmessage = function(event) {
+  var msg = event.data.pluginMessage;
+  if (!msg) return;
+  btnRun.disabled = false;
+  if (msg.type === 'result') {
+    if (msg.count === 0) {
+      status.className = 'success';
+      status.textContent = 'No violations ✓';
+    } else {
+      status.className = '';
+      status.textContent = '→ ' + msg.count + ' violation' + (msg.count > 1 ? 's' : '') + ' found';
+    }
+  }
+  if (msg.type === 'error') {
+    status.className = 'error';
+    status.textContent = msg.message;
+  }
+};
+</script>
+</body>
+</html>
