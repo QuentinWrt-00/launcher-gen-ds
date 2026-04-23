@@ -62,9 +62,16 @@ function checkRadius(node, violations) {
 function checkSpacing(node, violations) {
   // Uniquement sur les frames en auto-layout — exclut les viewboxes d'icônes et frames sans layout
   if (!node.layoutMode || node.layoutMode === 'NONE') return;
-  ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom', 'itemSpacing', 'counterAxisSpacing'].forEach(function(prop) {
+  ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom'].forEach(function(prop) {
     checkNumberProp(node, prop, violations, true);
   });
+  // Skip itemSpacing quand gap = Auto (SPACE_BETWEEN) — valeur numérique non pertinente
+  if (node.primaryAxisAlignItems !== 'SPACE_BETWEEN') {
+    checkNumberProp(node, 'itemSpacing', violations, true);
+  }
+  if (node.counterAxisAlignItems !== 'SPACE_BETWEEN') {
+    checkNumberProp(node, 'counterAxisSpacing', violations, true);
+  }
 }
 
 function checkEffects(node, violations) {
