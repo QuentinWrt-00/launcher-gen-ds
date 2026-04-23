@@ -30,8 +30,7 @@ button {
   text-transform: uppercase;
   cursor: pointer;
 }
-#btn-run   { background: #000; color: #FAF5F2; margin-bottom: 8px; }
-#btn-clear { background: #e8e3df; color: #000; }
+#btn-run { background: #000; color: #FAF5F2; }
 button:hover    { opacity: 0.75; }
 button:disabled { opacity: 0.3; cursor: not-allowed; }
 #status {
@@ -49,24 +48,16 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
 <h2>Variable Linter</h2>
 <button id="btn-run">Run Audit</button>
 <div id="status"></div>
-<button id="btn-clear">Clear</button>
 
 <script>
-var status   = document.getElementById('status');
-var btnRun   = document.getElementById('btn-run');
-var btnClear = document.getElementById('btn-clear');
+var status = document.getElementById('status');
+var btnRun = document.getElementById('btn-run');
 
 btnRun.addEventListener('click', function() {
   btnRun.disabled = true;
   status.className = '';
   status.textContent = 'Running…';
   parent.postMessage({ pluginMessage: { type: 'run' } }, '*');
-});
-
-btnClear.addEventListener('click', function() {
-  status.className = '';
-  status.textContent = '';
-  parent.postMessage({ pluginMessage: { type: 'clear' } }, '*');
 });
 
 window.onmessage = function(event) {

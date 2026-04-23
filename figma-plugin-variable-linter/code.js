@@ -38,12 +38,30 @@ function checkStrokes(node, violations) {
 }
 
 function checkRadius(node, violations) {
-  ['cornerRadius', 'topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius'].forEach(function(prop) {
+  if (typeof node.cornerRadius === 'undefined') return;
+  var bv = node.boundVariables || {};
+
+  // Si cornerRadius est bound (toutes coins identiques via variable) → rien à flag
+  if (bv.cornerRadius) return;
+
+  // Si au moins un coin individuel est bound → la valeur est tokenisée
+  if (bv.topLeftRadius || bv.topRightRadius || bv.bottomLeftRadius || bv.bottomRightRadius) return;
+
+  // cornerRadius uniforme et non bound
+  if (typeof node.cornerRadius === 'number' && node.cornerRadius !== 0) {
+    violations.push({ layerId: node.id, layerName: node.name, property: 'cornerRadius', rawValue: String(node.cornerRadius) });
+    return;
+  }
+
+  // cornerRadius mixed → checker chaque coin individuellement
+  ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius'].forEach(function(prop) {
     checkNumberProp(node, prop, violations, true);
   });
 }
 
 function checkSpacing(node, violations) {
+  // Uniquement sur les frames en auto-layout — exclut les viewboxes d'icônes et frames sans layout
+  if (!node.layoutMode || node.layoutMode === 'NONE') return;
   ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom', 'itemSpacing', 'counterAxisSpacing'].forEach(function(prop) {
     checkNumberProp(node, prop, violations, true);
   });
