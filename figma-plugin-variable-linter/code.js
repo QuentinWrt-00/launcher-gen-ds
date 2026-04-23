@@ -167,9 +167,33 @@ async function createBadge(label) {
 async function createAuditOverlays(violations, selectionBounds) {
   clearAuditOverlays();
 
-  if (violations.length === 0) return;
-
   await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+
+  if (violations.length === 0) {
+    var ok = figma.createFrame();
+    ok.name = AUDIT_FRAME_NAME;
+    ok.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.67, b: 0.36 } }];
+    ok.cornerRadius = 4;
+    ok.layoutMode = 'HORIZONTAL';
+    ok.primaryAxisSizingMode = 'AUTO';
+    ok.counterAxisSizingMode = 'AUTO';
+    ok.primaryAxisAlignItems = 'CENTER';
+    ok.counterAxisAlignItems = 'CENTER';
+    ok.paddingLeft = 10;
+    ok.paddingRight = 10;
+    ok.paddingTop = 6;
+    ok.paddingBottom = 6;
+    ok.x = selectionBounds.x + selectionBounds.width + 24;
+    ok.y = selectionBounds.y;
+    var okText = figma.createText();
+    okText.fontName = { family: 'Inter', style: 'Regular' };
+    okText.characters = '✓  All good — no violations!';
+    okText.fontSize = 11;
+    okText.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    ok.appendChild(okText);
+    figma.currentPage.appendChild(ok);
+    return;
+  }
 
   // Bloc conteneur vertical positionné à droite de la sélection entière
   var container = figma.createFrame();
