@@ -167,9 +167,9 @@ async function createBadge(label) {
 async function createAuditOverlays(violations, selectionBounds) {
   clearAuditOverlays();
 
-  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
-
   if (violations.length === 0) return;
+
+  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
 
   // Bloc conteneur vertical positionné à droite de la sélection entière
   var container = figma.createFrame();

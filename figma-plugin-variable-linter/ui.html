@@ -42,18 +42,14 @@ button:hover    { opacity: 0.75; }
 button:disabled { opacity: 0.3; cursor: not-allowed; }
 #status {
   font-size: 11px;
-  color: #555;
-  min-height: 16px;
+  min-height: 36px;
   margin-top: 12px;
-}
-#status.error { color: #c0392b; }
-#status.success {
-  background: #e6f4ec;
-  color: #1a7a3c;
-  font-weight: 600;
   padding: 8px 10px;
   border-radius: 4px;
+  display: none;
 }
+#status.error   { display: block; background: #fdecea; color: #c0392b; }
+#status.success { display: block; background: #e6f4ec; color: #1a7a3c; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -89,10 +85,10 @@ window.onmessage = function(event) {
   if (msg.type === 'result') {
     if (msg.count === 0) {
       status.className = 'success';
-      status.textContent = '✓ No violations found';
+      status.textContent = '✓ All good — no violations found!';
     } else {
       status.className = 'error';
-      status.textContent = '→ ' + msg.count + ' violation' + (msg.count > 1 ? 's' : '') + ' found';
+      status.textContent = msg.count + ' violation' + (msg.count > 1 ? 's' : '') + ' found';
     }
   }
   if (msg.type === 'error') {
