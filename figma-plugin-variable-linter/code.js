@@ -125,68 +125,69 @@ function findViolations(nodes) {
 // ─── Overlays ─────────────────────────────────────────────────────────────────
 
 var AUDIT_FRAME_NAME = '[Audit]';
-var BADGE_COLOR = { r: 1, g: 0.231, b: 0.188 };
-var BADGE_STACK_OFFSET = 22;
 
-async function createBadge(label, x, y, stackIndex) {
-  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
-
-  var badge = figma.createFrame();
-  badge.name = 'badge:' + label;
-  badge.fills = [{ type: 'SOLID', color: BADGE_COLOR }];
-  badge.cornerRadius = 4;
-  badge.layoutMode = 'HORIZONTAL';
-  badge.primaryAxisSizingMode = 'AUTO';
-  badge.counterAxisSizingMode = 'AUTO';
-  badge.primaryAxisAlignItems = 'CENTER';
-  badge.counterAxisAlignItems = 'CENTER';
-  badge.paddingLeft = 6;
-  badge.paddingRight = 6;
-  badge.paddingTop = 2;
-  badge.paddingBottom = 2;
-
-  var text = figma.createText();
-  text.characters = label;
-  text.fontSize = 10;
-  text.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
-  badge.appendChild(text);
-
-  badge.x = x;
-  badge.y = y + stackIndex * BADGE_STACK_OFFSET;
-
-  return badge;
+function getSelectionBounds(selection) {
+  var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  selection.forEach(function(node) {
+    var b = node.absoluteBoundingBox;
+    if (!b) return;
+    if (b.x < minX) minX = b.x;
+    if (b.y < minY) minY = b.y;
+    if (b.x + b.width > maxX) maxX = b.x + b.width;
+    if (b.y + b.height > maxY) maxY = b.y + b.height;
+  });
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
-async function createAuditOverlays(violations) {
+async function createAuditOverlays(violations, selectionBounds) {
   clearAuditOverlays();
   if (violations.length === 0) return;
 
-  var auditFrame = figma.createFrame();
-  auditFrame.name = AUDIT_FRAME_NAME;
-  auditFrame.fills = [];
-  auditFrame.clipsContent = false;
-  auditFrame.resize(1, 1);
-  figma.currentPage.appendChild(auditFrame);
+  await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
 
-  var byLayer = {};
+  // Bloc unique positionné à droite de la bounding box de toute la sélection
+  var container = figma.createFrame();
+  container.name = AUDIT_FRAME_NAME;
+  container.fills = [{ type: 'SOLID', color: { r: 0.08, g: 0.08, b: 0.08 } }];
+  container.cornerRadius = 6;
+  container.layoutMode = 'VERTICAL';
+  container.primaryAxisSizingMode = 'AUTO';
+  container.counterAxisSizingMode = 'FIXED';
+  container.resize(240, 10); // largeur fixe, hauteur auto
+  container.paddingLeft = 12;
+  container.paddingRight = 12;
+  container.paddingTop = 10;
+  container.paddingBottom = 10;
+  container.itemSpacing = 5;
+  container.x = selectionBounds.x + selectionBounds.width + 24;
+  container.y = selectionBounds.y;
+
+  // En-tête : nombre de violations
+  var header = figma.createText();
+  header.fontName = { family: 'Inter', style: 'Regular' };
+  header.characters = violations.length + ' violation' + (violations.length > 1 ? 's' : '');
+  header.fontSize = 11;
+  header.fills = [{ type: 'SOLID', color: { r: 1, g: 0.231, b: 0.188 } }];
+  container.appendChild(header);
+
+  // Ligne de séparation visuelle (frame de 1px)
+  var divider = figma.createFrame();
+  divider.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 0.1 } }];
+  divider.resize(216, 1);
+  divider.layoutAlign = 'STRETCH';
+  container.appendChild(divider);
+
+  // Une ligne par violation : "LayerName  ›  property: value"
   violations.forEach(function(v) {
-    if (!byLayer[v.layerId]) byLayer[v.layerId] = [];
-    byLayer[v.layerId].push(v);
+    var row = figma.createText();
+    row.fontName = { family: 'Inter', style: 'Regular' };
+    row.characters = v.layerName + '  ›  ' + v.property + ': ' + v.rawValue;
+    row.fontSize = 10;
+    row.fills = [{ type: 'SOLID', color: { r: 0.85, g: 0.85, b: 0.85 } }];
+    container.appendChild(row);
   });
 
-  for (var layerId in byLayer) {
-    var node = figma.getNodeById(layerId);
-    if (!node || !node.absoluteBoundingBox) continue;
-    var bounds = node.absoluteBoundingBox;
-    var layerViolations = byLayer[layerId];
-    // Placer les badges à droite du layer pour ne pas masquer le design
-    var badgeX = bounds.x + bounds.width + 8;
-    for (var i = 0; i < layerViolations.length; i++) {
-      var v = layerViolations[i];
-      var badge = await createBadge(v.property + ': ' + v.rawValue, badgeX, bounds.y, i);
-      auditFrame.appendChild(badge);
-    }
-  }
+  figma.currentPage.appendChild(container);
 }
 
 function clearAuditOverlays() {
@@ -206,7 +207,8 @@ figma.ui.onmessage = async function(msg) {
       return;
     }
     var violations = findViolations(selection);
-    await createAuditOverlays(violations);
+    var selectionBounds = getSelectionBounds(selection);
+    await createAuditOverlays(violations, selectionBounds);
     figma.ui.postMessage({ type: 'result', count: violations.length });
   }
 
