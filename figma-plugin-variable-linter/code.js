@@ -126,8 +126,6 @@ function findViolations(nodes) {
 
 var AUDIT_FRAME_NAME = '[Audit]';
 var BADGE_COLOR = { r: 1, g: 0.231, b: 0.188 };
-var BADGE_OFFSET_X = -4;
-var BADGE_OFFSET_Y = -4;
 var BADGE_STACK_OFFSET = 22;
 
 async function createBadge(label, x, y, stackIndex) {
@@ -153,8 +151,8 @@ async function createBadge(label, x, y, stackIndex) {
   text.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
   badge.appendChild(text);
 
-  badge.x = x + BADGE_OFFSET_X;
-  badge.y = y + BADGE_OFFSET_Y + stackIndex * BADGE_STACK_OFFSET;
+  badge.x = x;
+  badge.y = y + stackIndex * BADGE_STACK_OFFSET;
 
   return badge;
 }
@@ -181,9 +179,11 @@ async function createAuditOverlays(violations) {
     if (!node || !node.absoluteBoundingBox) continue;
     var bounds = node.absoluteBoundingBox;
     var layerViolations = byLayer[layerId];
+    // Placer les badges à droite du layer pour ne pas masquer le design
+    var badgeX = bounds.x + bounds.width + 8;
     for (var i = 0; i < layerViolations.length; i++) {
       var v = layerViolations[i];
-      var badge = await createBadge(v.property + ': ' + v.rawValue, bounds.x, bounds.y, i);
+      var badge = await createBadge(v.property + ': ' + v.rawValue, badgeX, bounds.y, i);
       auditFrame.appendChild(badge);
     }
   }
@@ -196,7 +196,7 @@ function clearAuditOverlays() {
 
 // ─── Plugin entrypoint ────────────────────────────────────────────────────────
 
-figma.showUI(__html__, { width: 240, height: 148 });
+figma.showUI(__html__, { width: 240, height: 200 });
 
 figma.ui.onmessage = async function(msg) {
   if (msg.type === 'run') {
