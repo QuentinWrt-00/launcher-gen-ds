@@ -166,11 +166,21 @@ for (const [collection, data] of Object.entries(tokens)) {
   tokenCount += lines.length;
 
   // Shorthand box-shadow après les tokens shadow décomposés
+  // Auto-détecte tout groupe ayant offsetX comme enfant direct — générique, aucun hardcode
   if (collection === 'shadow') {
-    allLines.push('');
-    allLines.push('  /* ─── Shadows (shorthand) ─── */');
-    for (const size of ['sm', 'md', 'lg']) {
-      allLines.push(`  --shadow-${size}: var(--shadow-${size}-offsetX) var(--shadow-${size}-offsetY) var(--shadow-${size}-blur) var(--shadow-${size}-spread) var(--shadow-${size}-color);`);
+    const groups = [];
+    for (const [key, val] of Object.entries(data)) {
+      if (val && typeof val === 'object' && val.offsetX?.$value !== undefined) {
+        groups.push(key);
+      }
+    }
+    if (groups.length > 0) {
+      allLines.push('');
+      allLines.push('  /* ─── Shadows (shorthand) ─── */');
+      for (const group of groups) {
+        const inset = group.includes('inner') ? 'inset ' : '';
+        allLines.push(`  --${group}: ${inset}var(--${group}-offsetX) var(--${group}-offsetY) var(--${group}-blur) var(--${group}-spread) var(--${group}-color);`);
+      }
     }
   }
 }
