@@ -79,6 +79,7 @@ cp "$SCRIPT_DIR/tokens-to-css.js"           scripts/
 cp "$TEMPLATES/optimize-icons.js"           scripts/
 npm pkg set scripts.sync-tokens="node scripts/convert-tokens.js && node scripts/tokens-to-css.js" --silent
 npm pkg set scripts.optimize-icons="node scripts/optimize-icons.js" --silent
+npm pkg set scripts.dev="NODE_OPTIONS='--max-old-space-size=4096' next dev" --silent
 
 # figma-design-tokens.json est privé et généré par plugin — ne pas versionner
 echo "" >> .gitignore
@@ -267,13 +268,6 @@ const nextConfig: NextConfig = {
         as: "*.js",
       },
     },
-  },
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: [{ loader: "@svgr/webpack", options: { svgo: false } }],
-    });
-    return config;
   },
 };
 
