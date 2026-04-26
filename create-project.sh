@@ -210,7 +210,7 @@ Ne jamais utiliser `.filter(Boolean).join(" ")` ni concaténation de strings.
 
 **Containers** : `--color-container-primary` `-hover` `-pressed` | `--color-container-secondary` `-hover` `-pressed` | `--color-container-disable`
 **Content** : `--color-content-primary` `-hover` `-pressed` | `--color-content-on-primary` | `--color-content-on-secondary` | `--color-content-on-disable`
-**Borders** : `--border-primary` `-hover` `-pressed` | `--border-secondary` | `--border-disable`
+**Borders** : `--color-border-primary` `-hover` `-pressed` | `--color-border-secondary` | `--color-border-disable`
 **Border widths** : `--borders-width-thin` (1px) · `--borders-width-default` (2px) · `--borders-width-thick` (3px)
 **Spacing courants** : `--spacing-4` · `--spacing-8` · `--spacing-12` · `--spacing-16` · `--spacing-20` · `--spacing-24` · `--spacing-32` · `--spacing-48`
 **Icons** : `--icon-size-xs` (12px) · `--icon-size-sm` (16px) · `--icon-size-md` (20px) · `--icon-size-lg` (24px) · `--icon-size-xl` (32px)
